@@ -1,0 +1,32 @@
+// MyMutex.cpp: implementation of the MyMutex class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "MyMutex.h"
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+MyMutex::MyMutex()
+{
+	_lockTimes=0;
+}
+
+MyMutex::~MyMutex()
+{
+
+}
+void MyMutex::noop()
+{
+	;
+}
+void MyMutex::Lock()
+{
+	_Mutex.Lock();
+}
+void MyMutex::Unlock()
+{
+	_Mutex.Unlock();
+}
