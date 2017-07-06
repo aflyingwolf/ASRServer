@@ -23,7 +23,7 @@
 #include <afxwin.h>         // MFC 核心组件和标准组件
 #include <afxext.h>         // MFC 扩展
 
-
+#pragma warning(disable:4099)
 
 
 
@@ -34,9 +34,21 @@
 #include <afxcmn.h>             // MFC 对 Windows 公共控件的支持
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
-#include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
 
+//本地文件路径
+#define LOCOL_PATH		"E:\\USER"
+//共享盘文件路径,语音文件实际存储位置
+#define DATA_PATH		"G:\\USER"
 
+// 电话最大位长
+#define PHONELEN       32          
+#define CONFIG_FILE "D:\\CCS\\CONFIG\\CONFIGTTS.INI"
+#define LOG_PATH "D:\\ccs\\log"
+#define LOG_NAME_PREV "ASRServer"
+#define WM_ASRSERVER_SOCKET_MSG WM_USER+200
+
+//SOCKET缓冲区大小
+#define BLOCK_SIZE     4096
 
 
 

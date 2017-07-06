@@ -15,7 +15,7 @@
 // 有关此类的实现，请参阅 ASRServer.cpp
 //
 
-class CASRServerApp : public CWinAppEx
+class CASRServerApp : public CWinApp
 {
 public:
 	CASRServerApp();

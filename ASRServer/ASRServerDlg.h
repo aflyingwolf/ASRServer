@@ -8,7 +8,10 @@
 #include "BaseSocket.h"
 #include "Log.h"
 #include "ClientList.h"
-
+#include "ClientASRDataReq.h"
+#include "ClientASRDataReqList.h"
+#include "ASRThreadData.h"
+#include <list>
 #include "afxcmn.h"
 #include "afxwin.h"
 
@@ -45,8 +48,8 @@ public:
 	Log m_WriteLog;
 	//客户端列表
 	ClientList clientList;
-	ClientTTSDataReqList clientReqList;
-	list<TTSThreadData *> ttsThreadList;
+	ClientASRDataReqList clientReqList;
+	list<ASRThreadData *> asrThreadList;
 public:
 	//侦听服务器
 	BOOL OnListen();
@@ -69,7 +72,7 @@ public:
 	//写日志及在界面显示日志
 	void Log(Log::LogLevel level,CString log);
 	static unsigned __stdcall ASRThread(void *info);
-
+	virtual void OnOK();
 public:
 	CTreeCtrl mTreeClient;
 	CString listenPort;

@@ -26,7 +26,7 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 	if(_instance==NULL)
 	{
 		_instance=new Config();
-		_instance->_cfgNodeName="TTSSER";
+		_instance->_cfgNodeName="ASRSER";
 		_instance->_cfgFileName=cfgFileName;
 		
 		if(_instance->_cfgFileName.empty())
@@ -36,12 +36,12 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 			char szTemp[512];
 			memset(szTemp,0,sizeof(szTemp));
 			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //节名
-							"TTSServerIp", 
+							"ASRServerIp", 
 							"",    
 							szTemp, 
 							sizeof(szTemp), 
 							_instance->_cfgFileName.c_str()); 
-			_instance->TTSServerIp.assign(szTemp);
+			_instance->ASRServerIp.assign(szTemp);
 
 			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //节名
 							"SerialNO", 
@@ -88,7 +88,7 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 
 			GetPrivateProfileString("MONITOR", //节名
 							"AppName", 
-							_T("TTS合成服务端"),    
+							_T("ASR合成服务端"),    
 							szTemp, 
 							sizeof(szTemp), 
 							_instance->_cfgFileName.c_str());

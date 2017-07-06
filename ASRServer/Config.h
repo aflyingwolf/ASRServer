@@ -14,7 +14,7 @@ private:
 	 string _cfgNodeName;  //ÅäÖÃµÄ½ÚÃû
 	 static Config * _instance;
 public:
-	 string TTSServerIp;
+	 string ASRServerIp;
 	 string SerialNo;
 	 string ProductName;
 	 int Port;
