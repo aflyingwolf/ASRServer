@@ -17,7 +17,6 @@ public:
 	string caller;  //主叫号码
 	string called;  //被叫号码
 	int type;		//请求类型，1：文字，2：语音
-	string content;	//识别文字内容
-	string fileName; //要识别的文件名
+	string content;	//识别内容
 };
 

@@ -122,8 +122,7 @@ unsigned CASRServerDlg::ASRThread(void* info)
 {
 	CASRServerDlg *pDlg = NULL;
 	CString log;
-	char szFilePath[MAX_PATH];
-	char szDFilePath[MAX_PATH];
+	string fileName;
 	try
 	{
 		ASRThreadData * pThreadData=(ASRThreadData *)info;
@@ -161,21 +160,19 @@ unsigned CASRServerDlg::ASRThread(void* info)
 					{
 						log.Format("CASRServerDlg::ASRThread SOCKET=%d,Data=%s",req.Client,req.req.body.c_str());
 						pDlg->Log(Log::MESS_INFO,log);
-						
-						//创建文件及路径
-						memset(szFilePath,0,sizeof(szFilePath));
-						memset(szDFilePath,0,sizeof(szDFilePath));
+
 						FrameASRRsp rsp;
 						rsp.taskId=req.req.taskId;
 						rsp.caller=req.req.caller;
 						rsp.called=req.req.called;
 						rsp.ret=1;  //默认失败
 						
-						//开始合成数据到文件
-						nASRRet=ASRManager.ASRToFile(req.req.ASRData.c_str(),req.req.ASRData.length(),szFilePath);
-						if(nASRRet!=0)//合成失败
+						//开始语义识别
+						nASRRet=ASRManager.SemanticTxt(req.req.content,fileName);
+						if(nASRRet!=0)//识别失败
 						{
-							rsp.fileNum=0;
+							rsp.ret=1;
+							rsp.fileName="0";
 							string strRsp=rsp.GetFrameString();
 							pDlg->SendData(req.Client,strRsp.c_str(),strRsp.length());
 							log.Format("CASRServerDlg::ASRThread ASRToFile Error=%d",nASRRet);
@@ -183,9 +180,11 @@ unsigned CASRServerDlg::ASRThread(void* info)
 						}
 						else//合成成功
 						{
+							rsp.ret=0;
+							rsp.fileName="OK";
 							string strRsp=rsp.GetFrameString();
 							pDlg->SendData(req.Client,strRsp.c_str(),strRsp.length());
-							log.Format("CASRServerDlg::ASRThread ASROK %s",req.req.ASRData.c_str());
+							log.Format("CASRServerDlg::ASRThread ASROK %s",req.req.content.c_str());
 							pDlg->Log(Log::MESS_INFO,log);
 						}
 						if((nASRRet=ASRManager.Clean())!=0)//清除缓冲区

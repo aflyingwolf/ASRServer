@@ -153,6 +153,7 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 
 		case AIUIConstant::EVENT_RESULT:
 			{
+				this->mnState=1;
 				using namespace VA;
 				Json::Value bizParamJson;
 				Json::Reader reader;
@@ -187,9 +188,10 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 					if (NULL != buffer)
 					{
 						resultStr = string((char*)buffer->data());
-
 						sprintf(log,"onEvent %s:",resultStr.c_str());
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+						this->mnResult=0;
+						this->resultStr=resultStr;
 					}
 				}
 
@@ -213,7 +215,7 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 	}
 }
 
-AIUIClient::AIUIClient() : agent(NULL), writeThread(NULL),m_WriteLog(LOG_PATH,LOG_NAME_AIUI_CLIENT)
+AIUIClient::AIUIClient() : agent(NULL), writeThread(NULL),m_WriteLog(LOG_PATH,LOG_NAME_AIUI_CLIENT),mnResult(-1)
 {
 
 }
@@ -301,6 +303,7 @@ void AIUIClient::writeText()
 {
 	if (NULL != agent)
 	{
+		mnResult=-1;
 		string text = "hello";
 		// textData内存会在Message在内部处理完后自动release掉
 		Buffer* textData = Buffer::alloc(text.length());
@@ -317,7 +320,6 @@ void AIUIClient::writeText()
 void AIUIClient::destory()
 {
 	stopWriteThread();
-
 	if (NULL != agent)
 	{
 		agent->destroy();

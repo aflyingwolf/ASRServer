@@ -77,7 +77,9 @@ public:
 class AIUIClient: public IAIUIListener
 {
 public:
-	int mnState;
+	int mnState;   //AIUI状态
+	int mnResult;  //ASR状态成功0/调用中-1/失败1
+	string resultStr;	//ASR返回内容
 private:
 	IAIUIAgent* agent;
 

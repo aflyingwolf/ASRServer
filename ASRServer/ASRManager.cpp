@@ -58,6 +58,23 @@ bool ASRManager::waitClientState(int nMilTimeOut,int nState)
 	return false;
 }
 /******************************************************************************
+ *  函数名  :  int waitSemanticResult()
+ *  描  述  :  //等待语义识别结果
+ ******************************************************************************/
+bool ASRManager::waitSemanticResult(int nMilTimeOut)
+{
+	int nWait=100;
+	int nWaitNum=(int)nMilTimeOut/nWait;
+	for(int i=0;i<nWaitNum;i++)
+	{
+		if(0!=client.mnResult)
+			Sleep(nWait);
+		else
+			return true;
+	}
+	return false;
+}
+/******************************************************************************
  *  函数名  :  int InitConnect()
  *  描  述  :  //初始化连接
  ******************************************************************************/
@@ -90,47 +107,22 @@ bool ASRManager::ASRStartConnect()
 }
 
 /******************************************************************************
- *  函数名  :  ASRToFile(char * szDateBuffer,int nDataBufferLen,char * szVoxFile)
- *  描  述  :  //合成语音数据
+ *  函数名  :  SemanticTxt(string content,string & result)
+ *  描  述  :  语义识别
  ******************************************************************************/
-int ASRManager::ASRTxt(const char * szDateBuffer,int nDataBufferLen,const char * szVoxFile)
+int ASRManager::SemanticTxt(string content,string & result)
 {
 	if (ASR_ENABLE==0)
 		return 0;
 	else
 	{
-		return 0;
-		/*
-		if( NULL == m_hASRInstance)
-			return ASRERR_FALSE;
-		
-		int nAudioHead;
-		int nAudioData;
-		int nCode = ASR_CP_AUTO;
-		int nREADNUMBER=ASR_RN_DIGIT;
-		int nSpeech=-50;
-		int nVolume=2;
-		int nPitch=3;
-		int nRet;
-		//int nAudioData = ASR_ADF_ALAW8K1C;
-
-		
-		
-
-		ASRData ASRData;
-		memset(&ASRData,0,sizeof(ASRData));
-		ASRData.dwServiceID=m_ASRConnect.dwServiceID;
-		ASRData.dwInBufSize=nDataBufferLen;
-		ASRData.szInBuf=const_cast<char *>(szDateBuffer);
-
-		nRet = ASRSynthText2File(m_hASRInstance, 
-			&ASRData,szVoxFile,NULL, false,NULL);
-		if ( nRet != ASRERR_OK )
+		client.writeText();
+		int ret=waitSemanticResult(AIUI_EVENT_WAIT_TIMEOUT);
+		if(ret==0)//成功
 		{
-			;
+			result=client.resultStr;
 		}
-		return nRet;
-		*/
+		return ret;
 	}
 }
 /******************************************************************************
@@ -143,15 +135,7 @@ int ASRManager::ASRFinishDisconnect()
 		return 0;
 	else
 	{
-		/*
-		if(m_hASRInstance!=NULL)
-		{
-			return ASRDisconnect(m_hASRInstance);
-			
-		}
-		else
-			return ASRERR_FALSE;
-		*/
+		client.destory();
 		return 0;
 	}
 }
@@ -165,13 +149,6 @@ int ASRManager::Clean()
 		return 0;
 	else
 	{
-		/*
-		if(m_hASRInstance!=NULL)
-		{
-			return ASRClean(m_hASRInstance);
-		}
-		else return 0;
-		*/
 		return 0;
 	}
 }

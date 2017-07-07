@@ -14,6 +14,6 @@ FrameASRRsp::~FrameASRRsp(void)
 }
 string FrameASRRsp::GetFrameString()
 {
-	body=chan+" "+chanState+" "+caller+" "+int2str(fileNum)+" "+fileName;
+	body=this->taskId+" "+this->caller+" "+this->called+" "+int2str(this->ret)+" "+this->fileName;
 	return Frame::GetFrameString();
 }
