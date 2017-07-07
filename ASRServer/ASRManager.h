@@ -1,5 +1,6 @@
 #pragma once
 #include "Config.h"
+#include "AIUIClient.h"
 class ASRManager
 {
 public:
@@ -8,14 +9,17 @@ public:
 private:
 	void * m_hASRInstance;
 	int m_ASRConnect;
+	AIUIClient client;
 public:
 	static int ASRBeginInitialize();
 	static void ASREndUninitialize();
 	bool ASRInitConnect(Config config);
-	int ASRStartConnect();
-	//合成指定长度的数据到文件
-	int ASRToFile(const char * szDateBuffer,int nDataBufferLen,const char * szVoxFile);
+	bool ASRStartConnect();
+	//针对文字进行语义理解
+	int SemanticTxt(const char * szDateBuffer,int nDataBufferLen,const char * szVoxFile);
 	int ASRFinishDisconnect();
 	int Clean();
+	//等待客户端到达指定的状态
+	bool waitClientState(int nMilTimeOut,int nState);
 };
 

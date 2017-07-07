@@ -36,19 +36,20 @@
 
 
 //本地文件路径
-#define LOCOL_PATH		"E:\\USER"
+#define LOCOL_PATH		"F:\\USER"
 //共享盘文件路径,语音文件实际存储位置
 #define DATA_PATH		"G:\\USER"
 
 // 电话最大位长
 #define PHONELEN       32          
-#define CONFIG_FILE "D:\\CCS\\CONFIG\\CONFIGTTS.INI"
+#define CONFIG_FILE ".\\CONFIG\\CONFIGTTS.INI"
 #define LOG_PATH "D:\\ccs\\log"
 #define LOG_NAME_PREV "ASRServer"
 #define WM_ASRSERVER_SOCKET_MSG WM_USER+200
 
 //SOCKET缓冲区大小
 #define BLOCK_SIZE     4096
+
 
 
 

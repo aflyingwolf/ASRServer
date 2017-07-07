@@ -144,13 +144,13 @@ unsigned CASRServerDlg::ASRThread(void* info)
 					int nASRRet=0;
 					int nRet=0;
 					ASRManager ASRManager;
-					if(!ASRManager.ASRInitConnect(*pDlg->pConfig))//初始化失败
+					if(!ASRManager.ASRInitConnect(*pDlg->pConfig))//建立连接
 					{
 						log.Format("CASRServerDlg::ASRThread ASRInitConnect Error");
 						pDlg->Log(Log::ERROR_INFO,log);
 						continue;
 					}
-					if((nASRRet=ASRManager.ASRStartConnect())!=0)//连接ASRSERVER
+					if((nASRRet=ASRManager.ASRStartConnect())!=0)//唤醒
 					{
 						log.Format("CASRServerDlg::ASRThread ASRStartConnect Error=%d",nASRRet);
 						pDlg->Log(Log::ERROR_INFO,log);
@@ -166,10 +166,10 @@ unsigned CASRServerDlg::ASRThread(void* info)
 						memset(szFilePath,0,sizeof(szFilePath));
 						memset(szDFilePath,0,sizeof(szDFilePath));
 						FrameASRRsp rsp;
-						rsp.chan=req.req.chan;
-						rsp.chanState=req.req.chanState;
+						rsp.taskId=req.req.taskId;
 						rsp.caller=req.req.caller;
-						rsp.fileName=req.req.fileName;
+						rsp.called=req.req.called;
+						rsp.ret=1;  //默认失败
 						
 						//开始合成数据到文件
 						nASRRet=ASRManager.ASRToFile(req.req.ASRData.c_str(),req.req.ASRData.length(),szFilePath);

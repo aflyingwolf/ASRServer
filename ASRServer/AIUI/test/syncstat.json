@@ -1,0 +1,78 @@
+{
+   "flight::default" : {
+      "activeStatus" : "bg",
+      "sceneStatus" : "default"
+   },
+   "mapU::navi" : {
+      "activeStatus" : "noExists",
+      "data" : {
+         "route_plan" : {
+            "end_poi" : {
+               "lat" : "43.307171",
+               "lng" : "124.335638",
+               "poi" : "梨树县"
+            },
+            "reference_poi" : {
+               "lat" : "0.0",
+               "lng" : "0.0",
+               "poi" : ""
+            },
+            "start_poi" : {
+               "lat" : "31.830708",
+               "lng" : "117.143494",
+               "poi" : "出发地"
+            }
+         }
+      },
+      "sceneStatus" : "navigation"
+   },
+   "mapU::poiSearch" : {
+      "activeStatus" : "noExists",
+      "data" : {
+         "taget_info" : {
+            "end_poi" : {
+               "area" : "北京城区朝阳区",
+               "lat" : "43.307171",
+               "lng" : "124.335638",
+               "poi" : "梨树县",
+               "tel" : ""
+            },
+            "start_poi" : {
+               "lat" : "31.830708",
+               "lng" : "117.143494",
+               "poi" : "出发地"
+            }
+         }
+      },
+      "sceneStatus" : "moreTarget"
+   },
+   "mapU::poiSearchDemo" : {
+      "activeStatus" : "noExists",
+      "data" : {},
+      "sceneStatus" : "cardemo"
+   },
+   "musicX::default" : {
+      "activeStatus" : "bg",
+      "data" : {
+         "dataInfo" : {
+            "artist" : "Chris Medina",
+            "itemid" : "46478590",
+            "song" : "What Are Words"
+         }
+      },
+      "sceneStatus" : "playing"
+   },
+   "stock::default" : {
+      "activeStatus" : "bg",
+      "sceneStatus" : "default"
+   },
+   "weather::default" : {
+      "activeStatus" : "fg",
+      "data" : {
+	    "hotInfo" : {
+          "viewCmd" : "返回|主界面|通知栏|合肥|16°|26°|多云|西北风34级|空气质量良|今天|16°26°|明天|13°24°|周日|15°26°|周一|14°21°|周二|17°28°|周三|20°31°|更新时间20170505"
+		}
+	  },
+      "sceneStatus" : "default"
+   }
+}

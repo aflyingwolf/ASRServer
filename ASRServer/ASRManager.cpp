@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "ASRManager.h"
+#include "AIUIClient.h"
+//#include <aiui/AIUI.h>
 #define ASR_ENABLE 1
 
 ASRManager::ASRManager(void)
@@ -19,8 +21,13 @@ int ASRManager::ASRBeginInitialize()
 {
 	if (ASR_ENABLE==0)
 		return 0;
-	else 
-		return 0;//ASRInitializeEx(NULL,NULL);
+	else
+	{
+		AIUISetting::setSaveDataLog(true);
+		AIUISetting::setAIUIDir(CLIENT_ROOT_DIR);
+		AIUISetting::initLogger(LOG_DIR);
+		return 0;
+	}
 }
 /******************************************************************************
  *  函数名  :  void EndUninitialize()
@@ -34,6 +41,23 @@ void ASRManager::ASREndUninitialize()
 		;//ASRUninitialize();
 }
 /******************************************************************************
+ *  函数名  :  int waitClientState()
+ *  描  述  :  //等待客户端到达指定的状态
+ ******************************************************************************/
+bool ASRManager::waitClientState(int nMilTimeOut,int nState)
+{
+	int nWait=100;
+	int nWaitNum=(int)nMilTimeOut/nWait;
+	for(int i=0;i<nWaitNum;i++)
+	{
+		if(nState!=client.mnState)
+			Sleep(nWait);
+		else
+			return true;
+	}
+	return false;
+}
+/******************************************************************************
  *  函数名  :  int InitConnect()
  *  描  述  :  //初始化连接
  ******************************************************************************/
@@ -44,17 +68,8 @@ bool ASRManager::ASRInitConnect(Config config)
 	else
 	{
 		m_hASRInstance=NULL;
-		/*
-		memset(&m_ASRConnect, 0, sizeof(ASRConnectStruct));
-		m_ASRConnect.dwSDKVersion = IFLYASR_SDK_VER;
-		strcpy(m_ASRConnect.szCompanyName, config.CompanyName.c_str());
-		strcpy(m_ASRConnect.szUserName, config.UserName.c_str());
-		strcpy(m_ASRConnect.szProductName,config.ProductName.c_str());
-		strcpy(m_ASRConnect.szSerialNumber, config.SerialNo.c_str());
-		// Comment: Need network runtime library's support
-		strcpy(m_ASRConnect.szASRServerIP,config.ASRServerIp.c_str());
-		*/
-		return true;
+		client.createAgent();
+		return waitClientState(AIUI_EVENT_WAIT_TIMEOUT,AIUIConstant::STATE_IDLE);
 	}
 }
 
@@ -63,22 +78,14 @@ bool ASRManager::ASRInitConnect(Config config)
  *  函数名  :  int StartConnect()
  *  描  述  :  //连接服务器，并保存环境句柄
  ******************************************************************************/
-int ASRManager::ASRStartConnect()
+bool ASRManager::ASRStartConnect()
 {
 	if (ASR_ENABLE==0)
 		return 0;
 	else
 	{
-		/*
-		m_hASRInstance = ASRConnect(&m_ASRConnect);
-
-		if( NULL == m_hASRInstance)
-		{
-			return ASRGETERRCODE(m_ASRConnect.dwErrorCode);
-		}
-		return ASRERR_OK;
-		*/
-		return 0;
+		client.wakeup();
+		return waitClientState(AIUI_EVENT_WAIT_TIMEOUT,AIUIConstant::STATE_WORKING);
 	}
 }
 
@@ -86,7 +93,7 @@ int ASRManager::ASRStartConnect()
  *  函数名  :  ASRToFile(char * szDateBuffer,int nDataBufferLen,char * szVoxFile)
  *  描  述  :  //合成语音数据
  ******************************************************************************/
-int ASRManager::ASRToFile(const char * szDateBuffer,int nDataBufferLen,const char * szVoxFile)
+int ASRManager::ASRTxt(const char * szDateBuffer,int nDataBufferLen,const char * szVoxFile)
 {
 	if (ASR_ENABLE==0)
 		return 0;

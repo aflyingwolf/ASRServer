@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;..\include\MC;..\include\comLib"
+				AdditionalIncludeDirectories="..\include;..\include\MC;..\include\comLib;..\include\IFLY;.\jsoncpp;jsoncpp\json"
 				PreprocessorDefinitions="WIN32;_MBCS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;$(NOINHERIT)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="MC_Client.lib"
+				AdditionalDependencies="aiui.lib msc.lib MC_Client.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib"
 				LinkIncremental="0"
 				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
@@ -192,6 +192,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\AIUIClient.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ASRManager.cpp"
 				>
 			</File>
@@ -302,6 +306,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\AIUIClient.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ASRManager.h"
 				>
 			</File>
@@ -339,6 +347,14 @@
 			</File>
 			<File
 				RelativePath=".\Config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FileUtil.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FileUtil.h"
 				>
 			</File>
 			<File
@@ -415,6 +431,86 @@
 				RelativePath=".\res\ASRServer.rc2"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="jsoncpp"
+			>
+			<File
+				RelativePath=".\jsoncpp\json_batchallocator.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_internalarray.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_internalmap.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_reader.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_tool.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_value.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_valueiterator.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\jsoncpp\json_writer.cpp"
+				>
+			</File>
+			<Filter
+				Name="json"
+				>
+				<File
+					RelativePath=".\jsoncpp\json\assertions.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\autolink.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\features.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\forwards.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\json.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\reader.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\value.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\version.h"
+					>
+				</File>
+				<File
+					RelativePath=".\jsoncpp\json\writer.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
