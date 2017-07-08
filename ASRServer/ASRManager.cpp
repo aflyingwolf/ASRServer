@@ -50,17 +50,8 @@ void ASRManager::ASREndUninitialize()
  ******************************************************************************/
 bool ASRManager::waitClientState(int nMilTimeOut,int nState)
 {
+	Sleep(500);
 	return true;
-	int nWait=100;
-	int nWaitNum=(int)nMilTimeOut/nWait;
-	for(int i=0;i<nWaitNum;i++)
-	{
-		if(nState!=client.mnState)
-			Sleep(nWait);
-		else
-			return true;
-	}
-	return false;
 }
 /******************************************************************************
  *  º¯ÊýÃû  :  int waitSemanticResult()
@@ -92,7 +83,6 @@ bool ASRManager::ASRInitConnect(Config config)
 		client.init();
 		client.createAgent();
 		return true;
-		//return waitClientState(AIUI_EVENT_WAIT_TIMEOUT,AIUIConstant::STATE_IDLE);
 	}
 }
 
@@ -104,7 +94,7 @@ bool ASRManager::ASRInitConnect(Config config)
 bool ASRManager::ASRStartConnect()
 {
 	if (ASR_ENABLE==0)
-		return 0;
+		return true;
 	else
 	{
 		client.wakeup();

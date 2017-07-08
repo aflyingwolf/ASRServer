@@ -208,23 +208,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ASRThreadData.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\BaseSocket.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Client.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ClientASRDataReq.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ClientASRDataReqList.cpp"
 				>
 			</File>
 			<File
@@ -237,6 +225,10 @@
 			</File>
 			<File
 				RelativePath=".\Config.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FileUtil.cpp"
 				>
 			</File>
 			<File
@@ -322,19 +314,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ASRThreadData.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Client.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ClientASRDataReq.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ClientASRDataReqList.h"
 				>
 			</File>
 			<File
@@ -347,10 +327,6 @@
 			</File>
 			<File
 				RelativePath=".\Config.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FileUtil.cpp"
 				>
 			</File>
 			<File

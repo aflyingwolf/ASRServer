@@ -43,49 +43,12 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 							_instance->_cfgFileName.c_str()); 
 			_instance->ASRServerIp.assign(szTemp);
 
-			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //节名
-							"SerialNO", 
-							_T(""),    
-							szTemp, 
-							sizeof(szTemp), 
-							_instance->_cfgFileName.c_str());
-			_instance->SerialNo.assign(szTemp);
-	
-			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //节名
-							"ProductName", 
-							_T(""),    
-							szTemp, 
-							sizeof(szTemp), 
-							_instance->_cfgFileName.c_str());
-			_instance->ProductName.assign(szTemp);
-
-			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //节名
-							"UserName", 
-							_T(""),    
-							szTemp, 
-							sizeof(szTemp), 
-							_instance->_cfgFileName.c_str());
-			_instance->UserName.assign(szTemp);
-
-
-			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //节名
-							"CompanyName", 
-							_T(""),    
-							szTemp, 
-							sizeof(szTemp), 
-							_instance->_cfgFileName.c_str());
-			_instance->CompanyName.assign(szTemp);
-	
 			_instance->Port = GetPrivateProfileInt(_instance->_cfgNodeName.c_str(), //节名
 										"Port", //项名
 										1202,    //默认值
 										_instance->_cfgFileName.c_str());  
 	
-			_instance->ThreadNum = GetPrivateProfileInt(_instance->_cfgNodeName.c_str(), //节名
-							"THREADNUM", //对应IP
-							2,    //没找到此项时的返回值
-							_instance->_cfgFileName.c_str()); 
-
+	
 			GetPrivateProfileString("MONITOR", //节名
 							"AppName", 
 							_T("ASR合成服务端"),    

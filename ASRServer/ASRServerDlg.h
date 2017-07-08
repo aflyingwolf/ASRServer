@@ -8,9 +8,8 @@
 #include "BaseSocket.h"
 #include "Log.h"
 #include "ClientList.h"
-#include "ClientASRDataReq.h"
-#include "ClientASRDataReqList.h"
-#include "ASRThreadData.h"
+#include "FrameASRReq.h"
+#include "FrameASRRsp.h"
 #include <list>
 #include "afxcmn.h"
 #include "afxwin.h"
@@ -26,7 +25,7 @@ public:
 // 对话框数据
 	enum { IDD = IDD_ASRSERVER_DIALOG };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
 
@@ -48,10 +47,6 @@ public:
 	Log m_WriteLog;
 	//客户端列表
 	ClientList clientList;
-	ClientASRDataReqList clientReqList;
-	list<ASRThreadData *> asrThreadList;
-	//客户端
-	AIUIClient client;
 public:
 	//侦听服务器
 	BOOL OnListen();
@@ -73,7 +68,7 @@ public:
 	void SplitData(int m,char* pmsg,CString ip);
 	//写日志及在界面显示日志
 	void Log(Log::LogLevel level,CString log);
-	static unsigned __stdcall ASRThread(void *info);
+	FrameASRRsp ProcASRReq(FrameASRReq req);
 	virtual void OnOK();
 public:
 	CTreeCtrl mTreeClient;

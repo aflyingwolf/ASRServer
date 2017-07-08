@@ -15,12 +15,7 @@ private:
 	 static Config * _instance;
 public:
 	 string ASRServerIp;
-	 string SerialNo;
-	 string ProductName;
 	 int Port;
-	 string UserName;
-	 string CompanyName;
-	 int ThreadNum;
 	 string AppName;  //应用功能程序名称
 	 string MonUrl;   //监控URL
 	 int HeartTimerInterval;  //心跳时间间隔

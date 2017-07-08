@@ -52,10 +52,6 @@ BEGIN_MESSAGE_MAP(CASRServerDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_CLEAR, &CASRServerDlg::OnBnClickedButtonClear)
 	ON_BN_CLICKED(IDC_BUTTON_DISCLIENT, &CASRServerDlg::OnBnClickedButtonDisclient)
 	ON_LBN_DBLCLK(IDC_LIST_MESSAGE, &CASRServerDlg::OnLbnDblclkListMessage)
-	ON_BN_CLICKED(IDC_BUTTON1, &CASRServerDlg::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_BUTTON2, &CASRServerDlg::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_BUTTON3, &CASRServerDlg::OnBnClickedButton3)
-	ON_BN_CLICKED(IDC_BUTTON4, &CASRServerDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -79,12 +75,12 @@ BOOL CASRServerDlg::OnInitDialog()
 		return TRUE;
 	}
 	MC_Init(pConfig->AppName,pConfig->HeartTimerInterval);
-	Log(Log::MESS_INFO,"IFlyASRServer 启动");
+	Log(Log::MESS_INFO,"ASRServer 启动");
 	// TODO: 在此添加额外的初始化代码
 	//服务端SOCKET侦听
 	if (!OnListen())
 	{
-		//AfxMessageBox("侦听失败");
+		AfxMessageBox("侦听失败");
 		OnOK();
 		return FALSE;
 	}
@@ -98,144 +94,82 @@ BOOL CASRServerDlg::OnInitDialog()
 		OnOK();
 		return FALSE;
 	}
-
-	//开线程
-	/*
-	HANDLE hHandle;
-	for (int i=0;i<pConfig->ThreadNum;i++)
-	{
-		ASRThreadData * pThreadData=new ASRThreadData();
-		pThreadData->pDlg=this;
-		pThreadData->bExit=false;
-		hHandle = (HANDLE)_beginthreadex(NULL,0,&ASRThread,pThreadData,0,&pThreadData->ThreadId);
-		if (NULL== hHandle)
-		{
-			AfxMessageBox("ASR线程创建失败！");
-			delete pThreadData;
-			OnOK();
-			return FALSE;
-		}
-		pThreadData->ThreadHandle=hHandle;
-		asrThreadList.push_back(pThreadData);
-	}
-	*/
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 /******************************************************************************
-*  函数名   : ASRThread(chan,event)
-*  描  述   : 发数据 ASR，维护整个ASR的连接
+*  函数名   : ProcASR(FrameASRReq req)
+*  描  述   : 处理ASR数据
 *******************************************************************************/
-unsigned CASRServerDlg::ASRThread(void* info)
+FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 {
-	CASRServerDlg *pDlg = NULL;
 	CString log;
-	string fileName;
+	FrameASRRsp rsp;
+	rsp.taskId=req.taskId;
+	rsp.caller=req.caller;
+	rsp.called=req.called;
+	rsp.ret=1;  //默认失败
+	CASRServerDlg * pDlg=this;
 	try
 	{
-		ASRThreadData * pThreadData=(ASRThreadData *)info;
-		pDlg=(CASRServerDlg *)pThreadData->pDlg;
-		//while(!pThreadData->bExit)//程序没有退出
+		int nASRRet=0;
+		ASRManager ASRManager;
+		if(!ASRManager.ASRInitConnect(*this->pConfig))//建立连接
 		{
-			try
-			{
-				/*
-				while(pDlg->clientReqList.isEmpty())//空，则等待
-				{
-					Sleep(1000);
-				}
-				*/
-				try
-				{
-					//ASR采用短连接机制
-					//这里ASR连接建立
-					int nASRRet=0;
-					int nRet=0;
-					ASRManager ASRManager;
-					if(!ASRManager.ASRInitConnect(*pDlg->pConfig))//建立连接
-					{
-						log.Format("CASRServerDlg::ASRThread ASRInitConnect Error");
-						pDlg->Log(Log::ERROR_INFO,log);
-						return -1;
-					}
-					if((nASRRet=ASRManager.ASRStartConnect())!=true)//唤醒
-					{
-						log.Format("CASRServerDlg::ASRThread ASRStartConnect Error=%d",nASRRet);
-						pDlg->Log(Log::ERROR_INFO,log);
-						return -1;
-					}
-					ClientASRDataReq req;
-					while(pDlg->clientReqList.GetASRReq(req))//循环处理收到的ASR合成请求
-					{
-						log.Format("CASRServerDlg::ASRThread SOCKET=%d,Data=%s",req.Client,req.req.body.c_str());
-						pDlg->Log(Log::MESS_INFO,log);
+			log.Format("CASRServerDlg::ProcASR ASRInitConnect Error");
+			pDlg->Log(Log::ERROR_INFO,log);
+			return rsp;
+		}
+		if((nASRRet=ASRManager.ASRStartConnect())!=true)//唤醒
+		{
+			log.Format("CASRServerDlg::ProcASR ASRStartConnect Error=%d",nASRRet);
+			pDlg->Log(Log::ERROR_INFO,log);
+			return rsp;
+		}
+		log.Format("CASRServerDlg::ProcASR Data=%s",req.body.c_str());
+		pDlg->Log(Log::MESS_INFO,log);
 
-						FrameASRRsp rsp;
-						rsp.taskId=req.req.taskId;
-						rsp.caller=req.req.caller;
-						rsp.called=req.req.called;
-						rsp.ret=1;  //默认失败
-						
-						//开始语义识别
-						nASRRet=ASRManager.SemanticTxt(req.req.content,fileName);
-						if(nASRRet!=0)//识别失败
-						{
-							rsp.ret=1;
-							rsp.fileName="0";
-							string strRsp=rsp.GetFrameString();
-							pDlg->SendData(req.Client,strRsp.c_str(),strRsp.length());
-							log.Format("CASRServerDlg::ASRThread ASRToFile Error=%d",nASRRet);
-							pDlg->Log(Log::ERROR_INFO,log);
-						}
-						else//合成成功
-						{
-							rsp.ret=0;
-							rsp.fileName="OK";
-							string strRsp=rsp.GetFrameString();
-							pDlg->SendData(req.Client,strRsp.c_str(),strRsp.length());
-							log.Format("CASRServerDlg::ASRThread ASROK %s",req.req.content.c_str());
-							pDlg->Log(Log::MESS_INFO,log);
-						}
-						if((nASRRet=ASRManager.Clean())!=0)//清除缓冲区
-						{
-							log.Format("CASRServerDlg::ASRThread Clean Error=%d",nASRRet);
-							pDlg->Log(Log::ERROR_INFO,log);
-							continue;
-						}
-					}
-					//本次循环处理结束，断开连接
-					if((nASRRet=ASRManager.ASRFinishDisconnect())!=0)//断开连接ASRSERVER
-					{
-						log.Format("CASRServerDlg::ASRThread ASRFinishDisconnect Error=%d",nASRRet);
-						pDlg->Log(Log::ERROR_INFO,log);
-					}
-				}
-				catch(...)
-				{
-					CString log;
-					log.Format("CASRServerDlg::ASRThread Proc ERROR");
-					if(pDlg!=NULL)
-						pDlg->Log(Log::ERROR_INFO,log);
-				}
-			}
-			catch(...)
-			{
-				CString log;
-				log.Format("CASRServerDlg::ASRThread ERROR");
-				if(pDlg!=NULL)
-					pDlg->Log(Log::ERROR_INFO,log);
-			}
+		//开始语义识别
+		nASRRet=ASRManager.SemanticTxt(req.content,rsp.fileName);
+		if(nASRRet!=0)//识别失败
+		{
+			rsp.ret=1;
+			rsp.fileName="0";
+			string strRsp=rsp.GetFrameString();
+			log.Format("CASRServerDlg::ProcASR SemanticTxt Error=%d",nASRRet);
+			pDlg->Log(Log::ERROR_INFO,log);
+		}
+		else//合成成功
+		{
+			log.Format("CASRServerDlg::ProcASR SemanticTxt OK %s",rsp.fileName.c_str());
+			pDlg->Log(Log::MESS_INFO,log);
+			rsp.ret=0;
+			rsp.fileName="OK";
+			string strRsp=rsp.GetFrameString();
+			log.Format("CASRServerDlg::ProcASR SemanticTxt OK %s",req.content.c_str());
+			pDlg->Log(Log::MESS_INFO,log);
+		}
+		if((nASRRet=ASRManager.Clean())!=0)//清除缓冲区
+		{
+			log.Format("CASRServerDlg::ProcASR Clean Error=%d",nASRRet);
+			pDlg->Log(Log::ERROR_INFO,log);
+		}
+		//处理结束，断开连接
+		if((nASRRet=ASRManager.ASRFinishDisconnect())!=0)//断开连接ASRSERVER
+		{
+			log.Format("CASRServerDlg::ProcASR ASRFinishDisconnect Error=%d",nASRRet);
+			pDlg->Log(Log::ERROR_INFO,log);
 		}
 	}
 	catch(...)
 	{
 		CString log;
-		log.Format("CASRServerDlg::ASRThread ERROR");
+		log.Format("CASRServerDlg::ProcASR ERROR");
 		if(pDlg!=NULL)
 			pDlg->Log(Log::ERROR_INFO,log);
 	}
 	if(pDlg!=NULL)
-		pDlg->Log(Log::MESS_INFO,"CASRServerDlg::ASRThread EXIT");
-	return 0;
+		pDlg->Log(Log::MESS_INFO,"CASRServerDlg::ProcASR EXIT");
+	return rsp;
 }
 void CASRServerDlg::OnOK() 
 {
@@ -243,15 +177,6 @@ void CASRServerDlg::OnOK()
 	{
 		Log(Log::MESS_INFO,"程序会在清理资源后关闭,请稍候.....");
 		this->clientList.Clear();
-		for(list<ASRThreadData *>::iterator it=asrThreadList.begin();
-			it!=asrThreadList.end();it++)
-		{
-			ASRThreadData * pThreadData=*it;
-			pThreadData->bExit=true;
-			WaitForSingleObject(pThreadData->ThreadHandle,1500);
-			if(pThreadData->ThreadHandle!=NULL)
-				CloseHandle(pThreadData->ThreadHandle);
-		}
 		ASRManager::ASREndUninitialize();
 		Config::ClearConfig();
 		m_WriteLog.WriteLog(Log::MESS_INFO,"ASRServer 关闭");
@@ -323,7 +248,7 @@ BOOL CASRServerDlg::OnListen()
 	}
 
 	//Listen socket
-	nRetuCode = ServerSocket.Listen(64);
+	nRetuCode = ServerSocket.Listen(256);
 	if(nRetuCode < 0) 
 	{
 		AfxMessageBox("OnListen:侦听失败");
@@ -521,12 +446,10 @@ void CASRServerDlg::ProcData(Client * pClient,char * szBuffer)
 				}
 				else if(fields[0]==FrameConst::ASR_REQ)//合成数据
 				{
-					FrameASRReq Req(fields[0],fields[1]);
-					strRsp=Req.ProcData();
-					ClientASRDataReq clientReq;
-					clientReq.Client=pClient->pclientSocket->m_Socket;
-					clientReq.req=Req;
-					this->clientReqList.AddList(clientReq);
+					FrameASRReq req(fields[0],fields[1]);
+					req.ProcData();
+					FrameASRRsp rsp=ProcASRReq(req);
+					strRsp=rsp.GetFrameString();	
 				}
 				//如果返回串有内容，则发送
 				if(strRsp.compare("")!=0)
@@ -536,11 +459,6 @@ void CASRServerDlg::ProcData(Client * pClient,char * szBuffer)
 				}
 				log.Format("ProcData 完成 %s:%d 数据:%s",pClient->ip.c_str(),pClient->port,szBuffer);
 				Log(Log::MESS_INFO,log);
-				ASRThreadData * pThreadData=new ASRThreadData();
-				pThreadData->pDlg=this;
-				pThreadData->bExit=false;
-				ASRThread(pThreadData);
-				delete pThreadData;
 			}
 			else
 			{
@@ -684,29 +602,4 @@ void CASRServerDlg::OnLbnDblclkListMessage()
 		log.Format("OnLbnDblclkListMessage Error");
 		Log(Log::ERROR_INFO,log);
 	}
-}
-
-void CASRServerDlg::OnBnClickedButton1()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	client.init();
-	client.createAgent();
-}
-
-void CASRServerDlg::OnBnClickedButton2()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	client.wakeup();
-}
-
-void CASRServerDlg::OnBnClickedButton3()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	client.writeText();
-}
-
-void CASRServerDlg::OnBnClickedButton4()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	client.destory();
 }
