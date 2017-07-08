@@ -7,8 +7,6 @@ public:
 	ASRManager();
 	~ASRManager(void);
 private:
-	void * m_hASRInstance;
-	int m_ASRConnect;
 	AIUIClient client;
 private:
 	//等待客户端到达指定的状态

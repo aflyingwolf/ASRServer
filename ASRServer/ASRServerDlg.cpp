@@ -47,10 +47,15 @@ BEGIN_MESSAGE_MAP(CASRServerDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_ASRSERVER_SOCKET_MSG,OnASRServerSocketMsg)
 	ON_BN_CLICKED(IDC_BUTTON_EXIT, &CASRServerDlg::OnBnClickedButtonExit)
 	ON_BN_CLICKED(IDC_BUTTON_CLEAR, &CASRServerDlg::OnBnClickedButtonClear)
 	ON_BN_CLICKED(IDC_BUTTON_DISCLIENT, &CASRServerDlg::OnBnClickedButtonDisclient)
 	ON_LBN_DBLCLK(IDC_LIST_MESSAGE, &CASRServerDlg::OnLbnDblclkListMessage)
+	ON_BN_CLICKED(IDC_BUTTON1, &CASRServerDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CASRServerDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CASRServerDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CASRServerDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -95,6 +100,7 @@ BOOL CASRServerDlg::OnInitDialog()
 	}
 
 	//开线程
+	/*
 	HANDLE hHandle;
 	for (int i=0;i<pConfig->ThreadNum;i++)
 	{
@@ -112,6 +118,7 @@ BOOL CASRServerDlg::OnInitDialog()
 		pThreadData->ThreadHandle=hHandle;
 		asrThreadList.push_back(pThreadData);
 	}
+	*/
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 /******************************************************************************
@@ -127,15 +134,16 @@ unsigned CASRServerDlg::ASRThread(void* info)
 	{
 		ASRThreadData * pThreadData=(ASRThreadData *)info;
 		pDlg=(CASRServerDlg *)pThreadData->pDlg;
-		while(!pThreadData->bExit)//程序没有退出
+		//while(!pThreadData->bExit)//程序没有退出
 		{
 			try
 			{
+				/*
 				while(pDlg->clientReqList.isEmpty())//空，则等待
 				{
 					Sleep(1000);
 				}
-				
+				*/
 				try
 				{
 					//ASR采用短连接机制
@@ -147,13 +155,13 @@ unsigned CASRServerDlg::ASRThread(void* info)
 					{
 						log.Format("CASRServerDlg::ASRThread ASRInitConnect Error");
 						pDlg->Log(Log::ERROR_INFO,log);
-						continue;
+						return -1;
 					}
-					if((nASRRet=ASRManager.ASRStartConnect())!=0)//唤醒
+					if((nASRRet=ASRManager.ASRStartConnect())!=true)//唤醒
 					{
 						log.Format("CASRServerDlg::ASRThread ASRStartConnect Error=%d",nASRRet);
 						pDlg->Log(Log::ERROR_INFO,log);
-						continue;
+						return -1;
 					}
 					ClientASRDataReq req;
 					while(pDlg->clientReqList.GetASRReq(req))//循环处理收到的ASR合成请求
@@ -528,6 +536,11 @@ void CASRServerDlg::ProcData(Client * pClient,char * szBuffer)
 				}
 				log.Format("ProcData 完成 %s:%d 数据:%s",pClient->ip.c_str(),pClient->port,szBuffer);
 				Log(Log::MESS_INFO,log);
+				ASRThreadData * pThreadData=new ASRThreadData();
+				pThreadData->pDlg=this;
+				pThreadData->bExit=false;
+				ASRThread(pThreadData);
+				delete pThreadData;
 			}
 			else
 			{
@@ -671,4 +684,29 @@ void CASRServerDlg::OnLbnDblclkListMessage()
 		log.Format("OnLbnDblclkListMessage Error");
 		Log(Log::ERROR_INFO,log);
 	}
+}
+
+void CASRServerDlg::OnBnClickedButton1()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	client.init();
+	client.createAgent();
+}
+
+void CASRServerDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	client.wakeup();
+}
+
+void CASRServerDlg::OnBnClickedButton3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	client.writeText();
+}
+
+void CASRServerDlg::OnBnClickedButton4()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	client.destory();
 }

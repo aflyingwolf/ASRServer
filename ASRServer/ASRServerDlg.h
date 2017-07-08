@@ -14,7 +14,7 @@
 #include <list>
 #include "afxcmn.h"
 #include "afxwin.h"
-
+#include "AIUIClient.h"
 
 // CASRServerDlg 对话框
 class CASRServerDlg : public CDialog
@@ -50,6 +50,8 @@ public:
 	ClientList clientList;
 	ClientASRDataReqList clientReqList;
 	list<ASRThreadData *> asrThreadList;
+	//客户端
+	AIUIClient client;
 public:
 	//侦听服务器
 	BOOL OnListen();
@@ -83,4 +85,8 @@ public:
 	afx_msg void OnBnClickedButtonClear();
 	afx_msg void OnBnClickedButtonDisclient();
 	afx_msg void OnLbnDblclkListMessage();
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButton4();
 };

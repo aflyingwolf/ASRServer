@@ -34,7 +34,7 @@
 
 #define LOG_NAME_AIUI_CLIENT "AIUIClient"
 //等待AIUI响应的时间间隔
-#define AIUI_EVENT_WAIT_TIMEOUT 30000
+#define AIUI_EVENT_WAIT_TIMEOUT 6000
 using namespace aiui;
 using namespace std;
 
@@ -91,6 +91,7 @@ public:
 
 	~AIUIClient();
 public:
+	void init();
 	void createAgent();
 	void wakeup();
 	void start();
@@ -102,10 +103,7 @@ public:
 	void sync();
 	void destory();
 private:
-	void onEvent(IAIUIEvent& event);
-public:
-	void readCmd();
-	void test();
+	void onEvent(IAIUIEvent& event);	
 };
 
 #endif /* AIUIAGENTCLIENT_H_ */

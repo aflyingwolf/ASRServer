@@ -45,6 +45,7 @@
 #define CONFIG_FILE ".\\CONFIG\\CONFIGTTS.INI"
 #define LOG_PATH "D:\\ccs\\log"
 #define LOG_NAME_PREV "ASRServer"
+//SERVER SOCKET 消息句柄
 #define WM_ASRSERVER_SOCKET_MSG WM_USER+200
 
 //SOCKET缓冲区大小

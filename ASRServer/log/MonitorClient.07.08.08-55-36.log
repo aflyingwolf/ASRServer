@@ -1,0 +1,2 @@
+[ER][07.08 08:55:57.432]-[6568][MC_Init]发送初始化Error，地址http://10.100.2.249:7089/monitorsystem/httpPost/sendAlarm.action?
+[ER][07.08 08:57:07.691]-[6568][MC_AlarmSend]发送警告Error，地址http://10.100.2.249:7089/monitorsystem/httpPost/sendAlarm.action?

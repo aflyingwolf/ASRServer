@@ -23,9 +23,11 @@ int ASRManager::ASRBeginInitialize()
 		return 0;
 	else
 	{
-		AIUISetting::setSaveDataLog(true);
+		/*
+		//AIUISetting::setSaveDataLog(true);
 		AIUISetting::setAIUIDir(CLIENT_ROOT_DIR);
 		AIUISetting::initLogger(LOG_DIR);
+		*/
 		return 0;
 	}
 }
@@ -38,7 +40,9 @@ void ASRManager::ASREndUninitialize()
 	if (ASR_ENABLE==0)
 		return ;
 	else
-		;//ASRUninitialize();
+	{
+		
+	}
 }
 /******************************************************************************
  *  函数名  :  int waitClientState()
@@ -46,6 +50,7 @@ void ASRManager::ASREndUninitialize()
  ******************************************************************************/
 bool ASRManager::waitClientState(int nMilTimeOut,int nState)
 {
+	return true;
 	int nWait=100;
 	int nWaitNum=(int)nMilTimeOut/nWait;
 	for(int i=0;i<nWaitNum;i++)
@@ -84,9 +89,10 @@ bool ASRManager::ASRInitConnect(Config config)
 		return true;
 	else
 	{
-		m_hASRInstance=NULL;
+		client.init();
 		client.createAgent();
-		return waitClientState(AIUI_EVENT_WAIT_TIMEOUT,AIUIConstant::STATE_IDLE);
+		return true;
+		//return waitClientState(AIUI_EVENT_WAIT_TIMEOUT,AIUIConstant::STATE_IDLE);
 	}
 }
 
@@ -117,12 +123,13 @@ int ASRManager::SemanticTxt(string content,string & result)
 	else
 	{
 		client.writeText();
-		int ret=waitSemanticResult(AIUI_EVENT_WAIT_TIMEOUT);
-		if(ret==0)//成功
+		bool ret=waitSemanticResult(AIUI_EVENT_WAIT_TIMEOUT);
+		if(ret==true)//成功
 		{
 			result=client.resultStr;
+			return 0;
 		}
-		return ret;
+		return 1;
 	}
 }
 /******************************************************************************
