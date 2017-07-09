@@ -42,7 +42,7 @@
 
 // 电话最大位长
 #define PHONELEN       32          
-#define CONFIG_FILE ".\\CONFIG\\CONFIGTTS.INI"
+#define CONFIG_FILE ".\\config\\config_asr.ini"
 #define LOG_PATH "D:\\ccs\\log"
 #define LOG_NAME_PREV "ASRServer"
 //SERVER SOCKET 消息句柄
@@ -50,7 +50,8 @@
 
 //SOCKET缓冲区大小
 #define BLOCK_SIZE     4096
-
+//LOG日志字符串
+#define LOG_MAX_LENGTH 2048
 
 
 

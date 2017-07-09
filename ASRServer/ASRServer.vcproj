@@ -288,6 +288,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\string_convert.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stringgenc.cpp"
 				>
 			</File>
@@ -379,6 +383,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\string_convert.h"
 				>
 			</File>
 			<File

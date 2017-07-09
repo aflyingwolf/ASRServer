@@ -50,7 +50,7 @@ void ASRManager::ASREndUninitialize()
  ******************************************************************************/
 bool ASRManager::waitClientState(int nMilTimeOut,int nState)
 {
-	Sleep(500);
+	Sleep(200);
 	return true;
 }
 /******************************************************************************
@@ -81,7 +81,7 @@ bool ASRManager::ASRInitConnect(Config config)
 	else
 	{
 		client.init();
-		client.createAgent();
+		client.createAgent(config.appId);
 		return true;
 	}
 }
@@ -112,7 +112,7 @@ int ASRManager::SemanticTxt(string content,string & result)
 		return 0;
 	else
 	{
-		client.writeText();
+		client.writeText(content);
 		bool ret=waitSemanticResult(AIUI_EVENT_WAIT_TIMEOUT);
 		if(ret==true)//³É¹¦
 		{

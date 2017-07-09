@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Config.h"
 
 Config * Config::_instance=NULL;
@@ -26,16 +26,14 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 	if(_instance==NULL)
 	{
 		_instance=new Config();
-		_instance->_cfgNodeName="ASRSER";
 		_instance->_cfgFileName=cfgFileName;
-		
 		if(_instance->_cfgFileName.empty())
 			ret=false;
 		else
 		{
 			char szTemp[512];
 			memset(szTemp,0,sizeof(szTemp));
-			GetPrivateProfileString(_instance->_cfgNodeName.c_str(), //½ÚÃû
+			GetPrivateProfileString("ASRSER", //èŠ‚å
 							"ASRServerIp", 
 							"",    
 							szTemp, 
@@ -43,21 +41,21 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 							_instance->_cfgFileName.c_str()); 
 			_instance->ASRServerIp.assign(szTemp);
 
-			_instance->Port = GetPrivateProfileInt(_instance->_cfgNodeName.c_str(), //½ÚÃû
-										"Port", //ÏîÃû
-										1202,    //Ä¬ÈÏÖµ
+			_instance->Port = GetPrivateProfileInt("ASRSER", //èŠ‚å
+										"Port", //é¡¹å
+										1202,    //é»˜è®¤å€¼
 										_instance->_cfgFileName.c_str());  
 	
 	
-			GetPrivateProfileString("MONITOR", //½ÚÃû
+			GetPrivateProfileString("MONITOR", //èŠ‚å
 							"AppName", 
-							_T("ASRºÏ³É·þÎñ¶Ë"),    
+							_T("ASRæœåŠ¡ç«¯"),    
 							szTemp, 
 							sizeof(szTemp), 
 							_instance->_cfgFileName.c_str());
 			_instance->AppName.assign(szTemp);
 
-			GetPrivateProfileString("MONITOR", //½ÚÃû
+			GetPrivateProfileString("MONITOR", //èŠ‚å
 							"MonUrl", 
 							_T("http://10.100.6.136:7080/httpPost/sendAlarm.action"),    
 							szTemp, 
@@ -65,10 +63,18 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 							_instance->_cfgFileName.c_str());
 			_instance->MonUrl.assign(szTemp);
 
-			_instance->HeartTimerInterval = GetPrivateProfileInt("MONITOR", //½ÚÃû
-							"HeartTimerInterval", //¶ÔÓ¦IP
-							60,    //Ã»ÕÒµ½´ËÏîÊ±µÄ·µ»ØÖµ
+			_instance->HeartTimerInterval = GetPrivateProfileInt("MONITOR", //èŠ‚å
+							"HeartTimerInterval", //å¯¹åº”IP
+							60,    //æ²¡æ‰¾åˆ°æ­¤é¡¹æ—¶çš„è¿”å›žå€¼
 							_instance->_cfgFileName.c_str());
+			
+			GetPrivateProfileString("AIUI", //èŠ‚å
+							"appId", 
+							_T("595ce74c"),    
+							szTemp, 
+							sizeof(szTemp), 
+							_instance->_cfgFileName.c_str());
+			_instance->appId.assign(szTemp);
 
 			ret=true;
 		}		

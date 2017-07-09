@@ -1,23 +1,23 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 using namespace std;
 class Config
 {
 public:
 	~Config(void);
-	//¶ÁÈ¡ÅäÖÃÎÄ¼ş
+	//è¯»å–é…ç½®æ–‡ä»¶
 	static bool ReadConfig(const string cfgFileName,Config * & pConfig);
 	static void ClearConfig();
 private:
 	 Config(void);
 	 string _cfgFileName;
-	 string _cfgNodeName;  //ÅäÖÃµÄ½ÚÃû
 	 static Config * _instance;
 public:
 	 string ASRServerIp;
 	 int Port;
-	 string AppName;  //Ó¦ÓÃ¹¦ÄÜ³ÌĞòÃû³Æ
-	 string MonUrl;   //¼à¿ØURL
-	 int HeartTimerInterval;  //ĞÄÌøÊ±¼ä¼ä¸ô
+	 string AppName;  //åº”ç”¨åŠŸèƒ½ç¨‹åºåç§°
+	 string MonUrl;   //ç›‘æ§URL
+	 int HeartTimerInterval;  //å¿ƒè·³æ—¶é—´é—´éš”
+	 string appId;	 //APPID
 };
 

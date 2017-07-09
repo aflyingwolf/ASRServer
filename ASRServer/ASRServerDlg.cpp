@@ -1,5 +1,5 @@
-
-// ASRServerDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// ASRServerDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -24,7 +24,7 @@
 #endif
 
 
-// CASRServerDlg ¶Ô»°¿ò
+// CASRServerDlg å¯¹è¯æ¡†
 CASRServerDlg::CASRServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CASRServerDlg::IDD, pParent)
 	, listenPort(_T("")),m_WriteLog(LOG_PATH,LOG_NAME_PREV)
@@ -55,32 +55,32 @@ BEGIN_MESSAGE_MAP(CASRServerDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// CASRServerDlg ÏûÏ¢´¦Àí³ÌĞò
+// CASRServerDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CASRServerDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// TODO: ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–ä»£ç 
 
-	//¶ÁÈ¡ÅäÖÃ
+	//è¯»å–é…ç½®
 	if(!Config::ReadConfig(CONFIG_FILE,pConfig))
 	{
-		AfxMessageBox("¶ÁÈ¡ÅäÖÃÎÄ¼şÊ§°Ü£¬Çë¼ì²éÅäÖÃÎÄ¼ş£¡");
+		AfxMessageBox("è¯»å–é…ç½®æ–‡ä»¶å¤±è´¥ï¼Œè¯·æ£€æŸ¥é…ç½®æ–‡ä»¶ï¼");
 		return TRUE;
 	}
 	MC_Init(pConfig->AppName,pConfig->HeartTimerInterval);
-	Log(Log::MESS_INFO,"ASRServer Æô¶¯");
-	// TODO: ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯´úÂë
-	//·şÎñ¶ËSOCKETÕìÌı
+	Log(Log::MESS_INFO,"ASRServer å¯åŠ¨");
+	// TODO: åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–ä»£ç 
+	//æœåŠ¡ç«¯SOCKETä¾¦å¬
 	if (!OnListen())
 	{
-		AfxMessageBox("ÕìÌıÊ§°Ü");
+		AfxMessageBox("ä¾¦å¬å¤±è´¥");
 		OnOK();
 		return FALSE;
 	}
@@ -90,15 +90,21 @@ BOOL CASRServerDlg::OnInitDialog()
 	int nASRRet=0;
 	if((nASRRet=ASRManager::ASRBeginInitialize())!=0)
 	{
-		AfxMessageBox("ASR³õÊ¼»¯Ê§°Ü£¡");
+		AfxMessageBox("ASRåˆå§‹åŒ–å¤±è´¥ï¼");
 		OnOK();
 		return FALSE;
 	}
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	if(!ASRManager.ASRInitConnect(*this->pConfig))//å»ºç«‹è¿æ¥
+	{
+		AfxMessageBox("ASRè¿æ¥å¤±è´¥ï¼");
+		OnOK();
+		return FALSE;
+	}
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 /******************************************************************************
-*  º¯ÊıÃû   : ProcASR(FrameASRReq req)
-*  Ãè  Êö   : ´¦ÀíASRÊı¾İ
+*  å‡½æ•°å   : ProcASR(FrameASRReq req)
+*  æ  è¿°   : å¤„ç†ASRæ•°æ®
 *******************************************************************************/
 FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 {
@@ -107,19 +113,12 @@ FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 	rsp.taskId=req.taskId;
 	rsp.caller=req.caller;
 	rsp.called=req.called;
-	rsp.ret=1;  //Ä¬ÈÏÊ§°Ü
+	rsp.ret=1;  //é»˜è®¤å¤±è´¥
 	CASRServerDlg * pDlg=this;
 	try
 	{
 		int nASRRet=0;
-		ASRManager ASRManager;
-		if(!ASRManager.ASRInitConnect(*this->pConfig))//½¨Á¢Á¬½Ó
-		{
-			log.Format("CASRServerDlg::ProcASR ASRInitConnect Error");
-			pDlg->Log(Log::ERROR_INFO,log);
-			return rsp;
-		}
-		if((nASRRet=ASRManager.ASRStartConnect())!=true)//»½ĞÑ
+		if((nASRRet=ASRManager.ASRStartConnect())!=true)//å”¤é†’
 		{
 			log.Format("CASRServerDlg::ProcASR ASRStartConnect Error=%d",nASRRet);
 			pDlg->Log(Log::ERROR_INFO,log);
@@ -128,9 +127,9 @@ FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 		log.Format("CASRServerDlg::ProcASR Data=%s",req.body.c_str());
 		pDlg->Log(Log::MESS_INFO,log);
 
-		//¿ªÊ¼ÓïÒåÊ¶±ğ
+		//å¼€å§‹è¯­ä¹‰è¯†åˆ«
 		nASRRet=ASRManager.SemanticTxt(req.content,rsp.fileName);
-		if(nASRRet!=0)//Ê¶±ğÊ§°Ü
+		if(nASRRet!=0)//è¯†åˆ«å¤±è´¥
 		{
 			rsp.ret=1;
 			rsp.fileName="0";
@@ -138,25 +137,23 @@ FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 			log.Format("CASRServerDlg::ProcASR SemanticTxt Error=%d",nASRRet);
 			pDlg->Log(Log::ERROR_INFO,log);
 		}
-		else//ºÏ³É³É¹¦
+		else//åˆæˆæˆåŠŸ
 		{
-			log.Format("CASRServerDlg::ProcASR SemanticTxt OK %s",rsp.fileName.c_str());
+			log.Format("CASRServerDlg::ProcASR SemanticTxt OK rsp=%s",rsp.fileName.c_str());
 			pDlg->Log(Log::MESS_INFO,log);
-			rsp.ret=0;
-			rsp.fileName="OK";
-			string strRsp=rsp.GetFrameString();
-			log.Format("CASRServerDlg::ProcASR SemanticTxt OK %s",req.content.c_str());
+			if(rsp.fileName.compare("")==0){
+				rsp.ret=1;
+				rsp.fileName="0";
+			}
+			else{
+				rsp.ret=0;
+			}
+			log.Format("CASRServerDlg::ProcASR SemanticTxt OK req=%s",req.content.c_str());
 			pDlg->Log(Log::MESS_INFO,log);
 		}
-		if((nASRRet=ASRManager.Clean())!=0)//Çå³ı»º³åÇø
+		if((nASRRet=ASRManager.Clean())!=0)//æ¸…é™¤ç¼“å†²åŒº
 		{
 			log.Format("CASRServerDlg::ProcASR Clean Error=%d",nASRRet);
-			pDlg->Log(Log::ERROR_INFO,log);
-		}
-		//´¦Àí½áÊø£¬¶Ï¿ªÁ¬½Ó
-		if((nASRRet=ASRManager.ASRFinishDisconnect())!=0)//¶Ï¿ªÁ¬½ÓASRSERVER
-		{
-			log.Format("CASRServerDlg::ProcASR ASRFinishDisconnect Error=%d",nASRRet);
 			pDlg->Log(Log::ERROR_INFO,log);
 		}
 	}
@@ -175,11 +172,19 @@ void CASRServerDlg::OnOK()
 {
 	try
 	{
-		Log(Log::MESS_INFO,"³ÌĞò»áÔÚÇåÀí×ÊÔ´ºó¹Ø±Õ,ÇëÉÔºò.....");
+		CString log;
+		Log(Log::MESS_INFO,"ç¨‹åºä¼šåœ¨æ¸…ç†èµ„æºåå…³é—­,è¯·ç¨å€™.....");
 		this->clientList.Clear();
 		ASRManager::ASREndUninitialize();
+		//å¤„ç†ç»“æŸï¼Œæ–­å¼€è¿æ¥
+		int nASRRet;
+		if((nASRRet=ASRManager.ASRFinishDisconnect())!=0)//æ–­å¼€è¿æ¥ASRSERVER
+		{
+			log.Format("CASRServerDlg::ProcASR ASRFinishDisconnect Error=%d",nASRRet);
+			Log(Log::ERROR_INFO,log);
+		}
 		Config::ClearConfig();
-		m_WriteLog.WriteLog(Log::MESS_INFO,"ASRServer ¹Ø±Õ");
+		m_WriteLog.WriteLog(Log::MESS_INFO,"ASRServer å…³é—­");
 		MC_Stop();
 		CDialog::OnOK();
 	}
@@ -191,19 +196,19 @@ void CASRServerDlg::OnOK()
 	}
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CASRServerDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -211,7 +216,7 @@ void CASRServerDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -220,8 +225,8 @@ void CASRServerDlg::OnPaint()
 	}
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CASRServerDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -234,7 +239,7 @@ BOOL CASRServerDlg::OnListen()
 	SOCKET nSocket = this->ServerSocket.Socket();
 	if(nSocket < 0)
 	{
-		AfxMessageBox("OnListen():´´½¨·şÎñ¶ËSOCKET ERROR");
+		AfxMessageBox("OnListen():åˆ›å»ºæœåŠ¡ç«¯SOCKET ERROR");
 		return FALSE;
 	}
 	//bind port
@@ -242,7 +247,7 @@ BOOL CASRServerDlg::OnListen()
 	if(nRetuCode <= 0) 
 	{
 		char str[256]={0};
-		sprintf(str,"OnListen:tcp¶Ë¿Ú%d°î¶¨Ê§°Ü£¬ÇëÓÃfport¼ì²é",pConfig->Port);
+		sprintf(str,"OnListen:tcpç«¯å£%dé‚¦å®šå¤±è´¥ï¼Œè¯·ç”¨fportæ£€æŸ¥",pConfig->Port);
 		AfxMessageBox(str);
 		return FALSE;
 	}
@@ -251,7 +256,7 @@ BOOL CASRServerDlg::OnListen()
 	nRetuCode = ServerSocket.Listen(256);
 	if(nRetuCode < 0) 
 	{
-		AfxMessageBox("OnListen:ÕìÌıÊ§°Ü");
+		AfxMessageBox("OnListen:ä¾¦å¬å¤±è´¥");
 		return FALSE;
 	}
 
@@ -263,7 +268,7 @@ BOOL CASRServerDlg::OnListen()
 		AfxMessageBox("OnListen:Error in AsyncSelect()");
 		return FALSE;
 	}
-	Log(Log::MESS_INFO,"ÉèÖÃÕìÌı³É¹¦");
+	Log(Log::MESS_INFO,"è®¾ç½®ä¾¦å¬æˆåŠŸ");
 	return TRUE;
 }
 void CASRServerDlg::Log(Log::LogLevel level,CString log)
@@ -271,7 +276,7 @@ void CASRServerDlg::Log(Log::LogLevel level,CString log)
 	try
 	{
 		m_WriteLog.WriteLog(level,log);
-		if(mListMessage.GetCount()>200)//³¬¹ı200Ìõ¼ÇÂ¼
+		if(mListMessage.GetCount()>200)//è¶…è¿‡200æ¡è®°å½•
 		{
 			for(int i=0;i<195;i++)
 			{
@@ -285,7 +290,7 @@ void CASRServerDlg::Log(Log::LogLevel level,CString log)
 	}
 	catch(...)
 	{
-		;//m_WriteLog.WriteLog(Log::ERROR_INFO,"CIFlyASRServerDlg::Log Ê§°Ü");
+		;//m_WriteLog.WriteLog(Log::ERROR_INFO,"CIFlyASRServerDlg::Log å¤±è´¥");
 	}
 }
 void CASRServerDlg::Accept()
@@ -307,16 +312,16 @@ void CASRServerDlg::Accept()
 		pClientSocket=new CClientSocket(RetSock,sockaddrout);
 		if(pClientSocket==NULL)
 		{
-			Log(Log::ERROR_INFO,"¿Í»§¶ËSOCKET½ÓÊÜÊ§°Ü£¡");
+			Log(Log::ERROR_INFO,"å®¢æˆ·ç«¯SOCKETæ¥å—å¤±è´¥ï¼");
 			return ;
 		}
 		Client * pClient=new Client(strIP,sockaddrout.sin_port,pClientSocket);
 		this->clientList.AddClient(pClient);
-		//½çÃæÔö¼Ó
+		//ç•Œé¢å¢åŠ 
 		HTREEITEM hItem,hSubItem0,hSubItem1;
 		CString str;
 		str.Format("%s:%d",strIP,sockaddrout.sin_port);
-		Log(Log::MESS_INFO,str+"Á¬½Ó");
+		Log(Log::MESS_INFO,str+"è¿æ¥");
 		hItem = this->mTreeClient.InsertItem(str,TVI_ROOT);
 		str.Format("SOCKET:%d",RetSock);
 		hSubItem0 = mTreeClient.InsertItem(strIP,hItem);
@@ -332,7 +337,7 @@ void CASRServerDlg::SendData(SOCKET clientSocket,const char * szBuffer,int nSize
 	try
 	{
 		CString log;
-		log.Format("·¢ËÍÊı¾İ:Socket=%d,strBuffer=%s",clientSocket,szBuffer);
+		log.Format("å‘é€æ•°æ®:Socket=%d,strBuffer=%s",clientSocket,szBuffer);
 		Log(Log::MESS_INFO,log); 
 		this->clientList.ClientSend(clientSocket,szBuffer,nSize);
 	}
@@ -348,7 +353,7 @@ void CASRServerDlg::ClientDisConnect(SOCKET clientSocket)
 		Client * pClient=this->clientList.RemoveClient(clientSocket);
 		if(pClient!=NULL)
 		{
-			//½çÃæÇå³ı
+			//ç•Œé¢æ¸…é™¤
 			CString str;
 			str.Format("%s:%d",pClient->ip.c_str(),pClient->port);
 			HTREEITEM hItem = mTreeClient.GetRootItem();
@@ -363,7 +368,7 @@ void CASRServerDlg::ClientDisConnect(SOCKET clientSocket)
 				hItem = mTreeClient.GetNextSiblingItem(hItem);
 			}
 			ClientClose(pClient);
-			Log(Log::MESS_INFO,str+"¶Ï¿ªÁ¬½Ó");
+			Log(Log::MESS_INFO,str+"æ–­å¼€è¿æ¥");
 		}
 	}
 	catch(...)
@@ -377,11 +382,11 @@ void CASRServerDlg::ClientClose(Client * pClient)
 	{
 		if(pClient!=NULL)
 		{
-			//SOCKET¹Ø±Õ
+			//SOCKETå…³é—­
 			if(pClient->pclientSocket!=NULL)
 			{
 				closesocket(pClient->pclientSocket->m_Socket);
-				//¶ÔÏóÉ¾³ı
+				//å¯¹è±¡åˆ é™¤
 				delete pClient->pclientSocket;
 			}
 			pClient->pclientSocket=NULL;
@@ -394,27 +399,27 @@ void CASRServerDlg::ClientClose(Client * pClient)
 		Log(Log::MESS_INFO,"ClientClose Error:");
 	}
 }
-//½ÓÊÕµ½Êı¾İ
+//æ¥æ”¶åˆ°æ•°æ®
 void CASRServerDlg::ReadData(SOCKET  clientSocket)
 {
 	try
 	{
-		//²éÕÒÊÇÄÄ¸öSOCKET
+		//æŸ¥æ‰¾æ˜¯å“ªä¸ªSOCKET
 		Client * pClient=clientList.FindClient(clientSocket);
 		if(pClient!=NULL)
 		{
 			CString log;
 			char Buf[BLOCK_SIZE+1];
 			memset(Buf,0,sizeof(Buf));
-			if(pClient->pclientSocket->Recv(Buf)<0)//½ÓÊÕÊı¾İÊ§°Ü£¬¿ÉÄÜÊÇÍøÂç¶Ï¿ª
+			if(pClient->pclientSocket->Recv(Buf)<0)//æ¥æ”¶æ•°æ®å¤±è´¥ï¼Œå¯èƒ½æ˜¯ç½‘ç»œæ–­å¼€
 			{
-				log.Format("½ÓÊÕµ½ %s:%d Êı¾İ:³ö´í",pClient->ip.c_str(),pClient->port);
+				log.Format("æ¥æ”¶åˆ° %s:%d æ•°æ®:å‡ºé”™",pClient->ip.c_str(),pClient->port);
 				Log(Log::ERROR_INFO,log);
 				ClientDisConnect(clientSocket);
 				return;
 			}
-			//½ÓÊÕÊı¾İÍê³É
-			log.Format("½ÓÊÕµ½ %s:%d Êı¾İ:%s",pClient->ip.c_str(),pClient->port,Buf);
+			//æ¥æ”¶æ•°æ®å®Œæˆ
+			log.Format("æ¥æ”¶åˆ° %s:%d æ•°æ®:%s",pClient->ip.c_str(),pClient->port,Buf);
 			Log(Log::MESS_INFO,log);
 			ProcData(pClient,Buf);
 		}
@@ -444,37 +449,37 @@ void CASRServerDlg::ProcData(Client * pClient,char * szBuffer)
 					FrameConnectTest Req(fields[0],fields[1]);
 					strRsp=Req.ProcData();
 				}
-				else if(fields[0]==FrameConst::ASR_REQ)//ºÏ³ÉÊı¾İ
+				else if(fields[0]==FrameConst::ASR_REQ)//åˆæˆæ•°æ®
 				{
 					FrameASRReq req(fields[0],fields[1]);
 					req.ProcData();
 					FrameASRRsp rsp=ProcASRReq(req);
 					strRsp=rsp.GetFrameString();	
 				}
-				//Èç¹û·µ»Ø´®ÓĞÄÚÈİ£¬Ôò·¢ËÍ
+				//å¦‚æœè¿”å›ä¸²æœ‰å†…å®¹ï¼Œåˆ™å‘é€
 				if(strRsp.compare("")!=0)
 				{
 					if(pClient->pclientSocket!=NULL)
 						SendData(pClient->pclientSocket->m_Socket,strRsp.c_str(),strRsp.length());
 				}
-				log.Format("ProcData Íê³É %s:%d Êı¾İ:%s",pClient->ip.c_str(),pClient->port,szBuffer);
+				log.Format("ProcData å®Œæˆ %s:%d æ•°æ®:%s",pClient->ip.c_str(),pClient->port,szBuffer);
 				Log(Log::MESS_INFO,log);
 			}
 			else
 			{
-				log.Format("ProcData %s:%d Êı¾İ:%s ¸ñÊ½´íÎó",pClient->ip.c_str(),pClient->port,szBuffer);
+				log.Format("ProcData %s:%d æ•°æ®:%s æ ¼å¼é”™è¯¯",pClient->ip.c_str(),pClient->port,szBuffer);
 				Log(Log::ERROR_INFO,log);
 			}
 		}
 	}
 	catch (std::exception& ex)
 	{
-		log.Format("ProcData %s:%d Êı¾İ:%s ´íÎó%s",pClient->ip.c_str(),pClient->port,szBuffer,ex.what());
+		log.Format("ProcData %s:%d æ•°æ®:%s é”™è¯¯%s",pClient->ip.c_str(),pClient->port,szBuffer,ex.what());
 		Log(Log::ERROR_INFO,log);
 	}
 	catch(...)
 	{
-		log.Format("ProcData %s:%d Êı¾İ:%s ´íÎó",pClient->ip.c_str(),pClient->port,szBuffer);
+		log.Format("ProcData %s:%d æ•°æ®:%s é”™è¯¯",pClient->ip.c_str(),pClient->port,szBuffer);
 		Log(Log::ERROR_INFO,log);
 	}
 }
@@ -486,14 +491,14 @@ LONG CASRServerDlg::OnASRServerSocketMsg(UINT wParam, long lParam)
 		if(WSAGETSELECTERROR(lParam))
 		{
 			//An error occured
-			Log(Log::ERROR_INFO,"SOCKET´íÎó:Socket="+wParam);
+			Log(Log::ERROR_INFO,"SOCKETé”™è¯¯:Socket="+wParam);
 			ClientDisConnect(wParam);
 			return 0;
 		}
 
 		switch(WSAGETSELECTEVENT(lParam))
 		{
-			case FD_READ:   //½ÓÊÕÊı¾İ
+			case FD_READ:   //æ¥æ”¶æ•°æ®
 				ReadData(wParam);
 				break;
 			case FD_WRITE:
@@ -520,14 +525,14 @@ LONG CASRServerDlg::OnASRServerSocketMsg(UINT wParam, long lParam)
 
 void CASRServerDlg::OnBnClickedButtonExit()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	this->bt_Exit.EnableWindow(false);
 	OnOK();
 }
 
 void CASRServerDlg::OnBnClickedButtonClear()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	try
 	{
 		mListMessage.ResetContent();
@@ -542,7 +547,7 @@ void CASRServerDlg::OnBnClickedButtonClear()
 
 void CASRServerDlg::OnBnClickedButtonDisclient()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	CString log;
 	try
 	{
@@ -552,7 +557,7 @@ void CASRServerDlg::OnBnClickedButtonDisclient()
 		{
 			CString str;
 			str = mTreeClient.GetItemText(hChild);
-			if(str.Find(":")==-1)  //Ã»ÓĞÕÒµ½£º·Ö¸î
+			if(str.Find(":")==-1)  //æ²¡æœ‰æ‰¾åˆ°ï¼šåˆ†å‰²
 			{
 				hChild=mTreeClient.GetNextSiblingItem(hChild);
 				str = mTreeClient.GetItemText(hChild);
@@ -565,9 +570,9 @@ void CASRServerDlg::OnBnClickedButtonDisclient()
 				strPort=fieldsList[1];
 				int Port=str2int(strPort);
 				Client * pClient=this->clientList.RemoveClient(Port);
-				if(pClient!=NULL)  //²éÕÒµ½¿Í»§¶Ë£¬¿ÉÄÜÓÃ»§Ñ¡ÔñµÄ´íÎó
+				if(pClient!=NULL)  //æŸ¥æ‰¾åˆ°å®¢æˆ·ç«¯ï¼Œå¯èƒ½ç”¨æˆ·é€‰æ‹©çš„é”™è¯¯
 				{
-					log.Format("ÊÖ¶¯¶Ï¿ªÁ¬½Ó:%s:%d",pClient->ip.c_str(),pClient->port);
+					log.Format("æ‰‹åŠ¨æ–­å¼€è¿æ¥:%s:%d",pClient->ip.c_str(),pClient->port);
 					Log(Log::ERROR_INFO,log);
 					mTreeClient.DeleteItem(hItem);
 					ClientClose(pClient);
@@ -576,7 +581,7 @@ void CASRServerDlg::OnBnClickedButtonDisclient()
 		}
 		else
 		{
-			::AfxMessageBox("ÇëÑ¡ÔñÄ³¿Í»§¶Ë¸ùÄ¿Â¼");
+			::AfxMessageBox("è¯·é€‰æ‹©æŸå®¢æˆ·ç«¯æ ¹ç›®å½•");
 		}
 	}
 	catch(...)
@@ -588,7 +593,7 @@ void CASRServerDlg::OnBnClickedButtonDisclient()
 
 void CASRServerDlg::OnLbnDblclkListMessage()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	try
 	{
 		CString str;

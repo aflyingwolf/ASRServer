@@ -86,20 +86,22 @@ private:
 	WriteAudioThread * writeThread;
 	//日志类
 	Log m_WriteLog;
+
+	string getSemanticAnswer(string strSemanticJson);
 public:
 	AIUIClient() ;
 
 	~AIUIClient();
 public:
 	void init();
-	void createAgent();
+	void createAgent(string appId);
 	void wakeup();
 	void start();
 	void stop();
 	void write(bool repeat);
 	void stopWriteThread();
 	void reset();
-	void writeText();
+	void writeText(string text);
 	void sync();
 	void destory();
 private:

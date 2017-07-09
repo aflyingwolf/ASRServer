@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef _STRING_GEN_C
 #define _STRING_GEN_C

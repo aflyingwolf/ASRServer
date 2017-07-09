@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "AIUIClient.h"
 #include "json/json.h"
-
+#include "string_convert.h"
 bool WriteAudioThread::threadLoop()
 {
 	char audio[1279];
@@ -91,7 +91,7 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 {
 	try
 	{
-		char log[2048];
+		char log[LOG_MAX_LENGTH];
 		sprintf(log,"onEvent getEventType:%d",event.getEventType());
 		m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 		switch (event.getEventType()) {
@@ -159,7 +159,8 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 		case AIUIConstant::EVENT_RESULT:
 			{
 				sprintf(log,"onEvent EVENT_RESULT");
-					m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+				m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+				
 				this->mnState=1;
 				using namespace VA;
 				Json::Value bizParamJson;
@@ -197,8 +198,9 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 						resultStr = string((char*)buffer->data());
 						sprintf(log,"onEvent %s:",resultStr.c_str());
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+						//解析JSON
 						this->mnResult=0;
-						this->resultStr=resultStr;
+						this->resultStr=getSemanticAnswer(resultStr);
 					}
 				}
 
@@ -221,7 +223,38 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 		m_WriteLog.WriteLog(Log::ERROR_INFO,"AIUIClient::onEvent Error");
 	}
 }
-
+/**
+根据语义识别JSON结果返回对应的回答
+**/
+string AIUIClient::getSemanticAnswer(string strSemanticJson)
+{
+	char log[LOG_MAX_LENGTH];
+	string answer;
+	using namespace VA;
+	Json::Value bizJson;
+	Json::Reader reader;
+	
+	if (!reader.parse(strSemanticJson, bizJson, false)) {
+		sprintf(log,"getSemanticAnswer parse error:%s",strSemanticJson);
+		m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+		answer="";
+	}
+	Json::Value answerRc=(bizJson["intent"])["rc"];
+	int nRc=answerRc.asInt();
+	if(nRc==0)//成功
+	{
+		//判断语义识别结果
+		Json::Value answerValue = ((bizJson["intent"])["answer"])["text"];
+		answer=answerValue.asString();
+		string answerUtf8=string_convert::utfs2s(answer);
+		answer=answerUtf8;
+	}
+	else
+	{
+		answer="";
+	}
+	return answer;
+}
 AIUIClient::AIUIClient() : agent(NULL), writeThread(NULL),m_WriteLog(LOG_PATH,LOG_NAME_AIUI_CLIENT),mnResult(-1)
 {
 
@@ -235,13 +268,14 @@ AIUIClient::~AIUIClient()
 	}
 }
 
-void AIUIClient::createAgent()
+void AIUIClient::createAgent(string appId)
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient createAgent begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+	string params="appid="+appId;
 	ISpeechUtility::createSingleInstance("", "",
-		"appid=595ce74c");
+		params.c_str());
 
 	string paramStr = FileUtil::readFileAsString(CFG_FILE_PATH);
 	agent = IAIUIAgent::createAgent(paramStr.c_str(), this);
@@ -251,7 +285,7 @@ void AIUIClient::createAgent()
 
 void AIUIClient::wakeup()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient wakeup begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
@@ -266,7 +300,7 @@ void AIUIClient::wakeup()
 
 void AIUIClient::start()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient start begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
@@ -281,7 +315,7 @@ void AIUIClient::start()
 
 void AIUIClient::stop()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient stop begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
@@ -297,7 +331,7 @@ void AIUIClient::stop()
 
 void AIUIClient::write(bool repeat)
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient write begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (agent == NULL)
@@ -315,7 +349,7 @@ void AIUIClient::write(bool repeat)
 
 void AIUIClient::stopWriteThread()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient stopWriteThread begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (writeThread) {
@@ -329,7 +363,7 @@ void AIUIClient::stopWriteThread()
 
 void AIUIClient::reset()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient reset begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
@@ -341,15 +375,15 @@ void AIUIClient::reset()
 	sprintf(log,"AIUIClient reset end");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }
-void AIUIClient::writeText()
+void AIUIClient::writeText(string text)
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient writeText begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
 	{
 		mnResult=-1;
-		string text = "hello";
+		text=string_convert::s2utfs(text);
 		// textData内存会在Message在内部处理完后自动release掉
 		Buffer* textData = Buffer::alloc(text.length());
 		text.copy((char*) textData->data(), text.length());
@@ -366,7 +400,7 @@ void AIUIClient::writeText()
 
 void AIUIClient::destory()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient destory begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	stopWriteThread();
@@ -381,7 +415,7 @@ void AIUIClient::destory()
 
 void AIUIClient::init()
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient init begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	//		AIUISetting::setSaveDataLog(true);

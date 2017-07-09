@@ -14,7 +14,7 @@
 #include "afxcmn.h"
 #include "afxwin.h"
 #include "AIUIClient.h"
-
+#include "ASRManager.h"
 // CASRServerDlg 对话框
 class CASRServerDlg : public CDialog
 {
@@ -47,6 +47,7 @@ public:
 	Log m_WriteLog;
 	//客户端列表
 	ClientList clientList;
+	ASRManager ASRManager;
 public:
 	//侦听服务器
 	BOOL OnListen();
