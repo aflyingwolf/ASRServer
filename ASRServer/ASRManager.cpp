@@ -4,6 +4,7 @@
 //#include <aiui/AIUI.h>
 #define ASR_ENABLE 1
 
+ILog * ASRManager::plog=NULL;
 ASRManager::ASRManager(void)
 {
 	
@@ -17,8 +18,9 @@ ASRManager::~ASRManager(void)
  *  函数名  :  int BeginInitialize()
  *  描  述  :  //初始化ASR引擎
  ******************************************************************************/
-int ASRManager::ASRBeginInitialize()
+int ASRManager::ASRBeginInitialize(ILog* plog)
 {
+	ASRManager::plog=plog;
 	if (ASR_ENABLE==0)
 		return 0;
 	else
@@ -106,20 +108,14 @@ bool ASRManager::ASRStartConnect()
  *  函数名  :  SemanticTxt(string content,string & result)
  *  描  述  :  语义识别
  ******************************************************************************/
-int ASRManager::SemanticTxt(string content,string & result)
+int ASRManager::SemanticTxt(string content,string & result,ISemanticResultListener * pListener)
 {
 	if (ASR_ENABLE==0)
 		return 0;
 	else
 	{
-		client.writeText(content);
-		bool ret=waitSemanticResult(AIUI_EVENT_WAIT_TIMEOUT);
-		if(ret==true)//成功
-		{
-			result=client.resultStr;
-			return 0;
-		}
-		return 1;
+		client.writeText(content,pListener);
+		return 0;
 	}
 }
 /******************************************************************************

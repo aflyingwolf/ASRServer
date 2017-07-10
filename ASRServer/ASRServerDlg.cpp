@@ -17,6 +17,7 @@
 #include "ASRManager.h"
 #include "FrameASRRsp.h"
 #include "MC_Client.h"
+
 #include <process.h> 
 
 #ifdef _DEBUG
@@ -88,7 +89,7 @@ BOOL CASRServerDlg::OnInitDialog()
 	UpdateData(false);
 
 	int nASRRet=0;
-	if((nASRRet=ASRManager::ASRBeginInitialize())!=0)
+	if((nASRRet=ASRManager::ASRBeginInitialize(&(this->m_WriteLog)))!=0)
 	{
 		AfxMessageBox("ASR初始化失败！");
 		OnOK();
@@ -103,18 +104,20 @@ BOOL CASRServerDlg::OnInitDialog()
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 /******************************************************************************
-*  函数名   : ProcASR(FrameASRReq req)
+*  函数名   : ProcASR(ClientASRDataReq req)
 *  描  述   : 处理ASR数据
 *******************************************************************************/
-FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
+void CASRServerDlg::ProcASRReq(ClientASRDataReq clientReq)
 {
 	CString log;
 	FrameASRRsp rsp;
-	rsp.taskId=req.taskId;
-	rsp.caller=req.caller;
-	rsp.called=req.called;
+	rsp.taskId=clientReq.req.taskId;
+	rsp.caller=clientReq.req.caller;
+	rsp.called=clientReq.req.called;
 	rsp.ret=1;  //默认失败
+	rsp.fileName="0";
 	CASRServerDlg * pDlg=this;
+	FrameASRReq req=clientReq.req;
 	try
 	{
 		int nASRRet=0;
@@ -122,40 +125,14 @@ FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 		{
 			log.Format("CASRServerDlg::ProcASR ASRStartConnect Error=%d",nASRRet);
 			pDlg->Log(Log::ERROR_INFO,log);
-			return rsp;
+			SendFrameASRRsp(clientReq.pClient,rsp);
+			return;
 		}
-		log.Format("CASRServerDlg::ProcASR Data=%s",req.body.c_str());
+		log.Format("CASRServerDlg::ProcASR Data=%s",clientReq.req.body.c_str());
 		pDlg->Log(Log::MESS_INFO,log);
-
-		//开始语义识别
-		nASRRet=ASRManager.SemanticTxt(req.content,rsp.fileName);
-		if(nASRRet!=0)//识别失败
-		{
-			rsp.ret=1;
-			rsp.fileName="0";
-			string strRsp=rsp.GetFrameString();
-			log.Format("CASRServerDlg::ProcASR SemanticTxt Error=%d",nASRRet);
-			pDlg->Log(Log::ERROR_INFO,log);
-		}
-		else//合成成功
-		{
-			log.Format("CASRServerDlg::ProcASR SemanticTxt OK rsp=%s",rsp.fileName.c_str());
-			pDlg->Log(Log::MESS_INFO,log);
-			if(rsp.fileName.compare("")==0){
-				rsp.ret=1;
-				rsp.fileName="0";
-			}
-			else{
-				rsp.ret=0;
-			}
-			log.Format("CASRServerDlg::ProcASR SemanticTxt OK req=%s",req.content.c_str());
-			pDlg->Log(Log::MESS_INFO,log);
-		}
-		if((nASRRet=ASRManager.Clean())!=0)//清除缓冲区
-		{
-			log.Format("CASRServerDlg::ProcASR Clean Error=%d",nASRRet);
-			pDlg->Log(Log::ERROR_INFO,log);
-		}
+		pDlg->req=clientReq;
+		//开始异步语义识别
+		nASRRet=ASRManager.SemanticTxt(clientReq.req.content,rsp.fileName,this);
 	}
 	catch(...)
 	{
@@ -164,9 +141,58 @@ FrameASRRsp CASRServerDlg::ProcASRReq(FrameASRReq req)
 		if(pDlg!=NULL)
 			pDlg->Log(Log::ERROR_INFO,log);
 	}
-	if(pDlg!=NULL)
-		pDlg->Log(Log::MESS_INFO,"CASRServerDlg::ProcASR EXIT");
-	return rsp;
+}
+void CASRServerDlg::SendFrameASRRsp(Client * pClient,FrameASRRsp rsp)
+{
+	CString log;
+	string strRsp=rsp.GetFrameString();	
+	if(pClient->pclientSocket!=NULL)
+		SendData(pClient->pclientSocket->m_Socket,strRsp.c_str(),strRsp.length());
+	log.Format("SendFrameASRRsp %s:%d 数据:%s",pClient->ip.c_str(),pClient->port,strRsp.c_str());
+	Log(Log::MESS_INFO,log);
+}
+/******************************************************************************
+ *  函数名  :  void onEvent()
+ *  描  述  :  语义结果
+ ******************************************************************************/
+void CASRServerDlg::onEvent(SemanticResultEvent * pEvent)
+{
+	char szLog[LOG_MAX_LENGTH];
+	int nASRRet;
+	if(pEvent->getEventName().compare("SementicResultTextEvent")==0)
+	{
+		SementicResultTextEvent * pTextEvent=dynamic_cast<SementicResultTextEvent *>(pEvent);
+		FrameASRReq req=pTextEvent->pListener->req.req;
+		FrameASRRsp rsp;
+		rsp.taskId=req.taskId;
+		rsp.caller=req.caller;
+		rsp.called=req.called;
+		rsp.ret=1;  //默认失败
+		rsp.fileName="0";
+		if(pTextEvent->text.compare("")!=0)  //有内容
+		{
+			sprintf(szLog,"CASRServerDlg::ProcASR SemanticTxt OK rsp=%s",pTextEvent->text.c_str());
+			WriteLog(Log::MESS_INFO,szLog);
+			rsp.ret=0;
+			rsp.fileName=pTextEvent->text.c_str();
+			sprintf(szLog,"CASRServerDlg::ProcASR SemanticTxt OK req=%s",req.content.c_str());
+			WriteLog(Log::MESS_INFO,szLog);
+		}
+		else
+		{
+			rsp.ret=1;
+			rsp.fileName="0";
+			string strRsp=rsp.GetFrameString();
+			sprintf(szLog,"CASRServerDlg::ProcASR SemanticTxt Error");
+			WriteLog(Log::MESS_INFO,szLog);
+		}
+		SendFrameASRRsp(pEvent->pListener->req.pClient,rsp);
+		if((nASRRet=ASRManager.Clean())!=0)//清除缓冲区
+		{
+			sprintf(szLog,"CASRServerDlg::ProcASR Clean Error=%d",nASRRet);
+			WriteLog(Log::MESS_INFO,szLog);
+		}
+	}
 }
 void CASRServerDlg::OnOK() 
 {
@@ -286,6 +312,29 @@ void CASRServerDlg::Log(Log::LogLevel level,CString log)
 		mListMessage.InsertString(mListMessage.GetCount(),log);
 		if(Log::ERROR_INFO==level)
 			MC_AlarmSend(103,CString2Char(log));
+		//UpdateData(false);
+	}
+	catch(...)
+	{
+		;//m_WriteLog.WriteLog(Log::ERROR_INFO,"CIFlyASRServerDlg::Log 失败");
+	}
+}
+void CASRServerDlg::WriteLog(Log::LogLevel level,string log)
+{
+	try
+	{
+		m_WriteLog.WriteLog(level,log.c_str());
+		if(mListMessage.GetCount()>200)//超过200条记录
+		{
+			for(int i=0;i<195;i++)
+			{
+				mListMessage.DeleteString(0);
+			}
+		}
+		CString cLog(log.c_str());
+		mListMessage.InsertString(mListMessage.GetCount(),cLog);
+		if(Log::ERROR_INFO==level)
+			MC_AlarmSend(103,log);
 		//UpdateData(false);
 	}
 	catch(...)
@@ -434,6 +483,8 @@ void CASRServerDlg::ProcData(Client * pClient,char * szBuffer)
 	CString log;
 	try
 	{
+		log.Format("ProcData %s:%d 数据:%s 开始",pClient->ip.c_str(),pClient->port,szBuffer);
+		Log(Log::MESS_INFO,log);
 		vector <string> packetList;
 		split(packetList,szBuffer,"#",split_e::no_empties);
 		for(vector <string>::iterator it=packetList.begin();
@@ -453,17 +504,11 @@ void CASRServerDlg::ProcData(Client * pClient,char * szBuffer)
 				{
 					FrameASRReq req(fields[0],fields[1]);
 					req.ProcData();
-					FrameASRRsp rsp=ProcASRReq(req);
-					strRsp=rsp.GetFrameString();	
+					ClientASRDataReq clientReq;
+					clientReq.pClient=pClient;
+					clientReq.req=req;
+					ProcASRReq(clientReq);
 				}
-				//如果返回串有内容，则发送
-				if(strRsp.compare("")!=0)
-				{
-					if(pClient->pclientSocket!=NULL)
-						SendData(pClient->pclientSocket->m_Socket,strRsp.c_str(),strRsp.length());
-				}
-				log.Format("ProcData 完成 %s:%d 数据:%s",pClient->ip.c_str(),pClient->port,szBuffer);
-				Log(Log::MESS_INFO,log);
 			}
 			else
 			{

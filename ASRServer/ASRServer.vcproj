@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ClientASRDataReq.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ClientList.cpp"
 				>
 			</File>
@@ -265,6 +269,10 @@
 			</File>
 			<File
 				RelativePath=".\MyMutex.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SemanticResultListener.cpp"
 				>
 			</File>
 			<File
@@ -319,6 +327,10 @@
 			</File>
 			<File
 				RelativePath=".\Client.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClientASRDataReq.h"
 				>
 			</File>
 			<File
@@ -379,6 +391,10 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SemanticResultListener.h"
 				>
 			</File>
 			<File

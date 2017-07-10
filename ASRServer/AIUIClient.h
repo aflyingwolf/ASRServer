@@ -16,6 +16,7 @@
 
 #include "FileUtil.h"
 #include "Log.h"
+#include "SemanticResultListener.h"
 
 #ifdef _MSC_VER
 #include <windows.h>
@@ -82,12 +83,11 @@ public:
 	string resultStr;	//ASR返回内容
 private:
 	IAIUIAgent* agent;
-
 	WriteAudioThread * writeThread;
 	//日志类
 	Log m_WriteLog;
-
 	string getSemanticAnswer(string strSemanticJson);
+	ISemanticResultListener * pTextListener;
 public:
 	AIUIClient() ;
 
@@ -101,7 +101,7 @@ public:
 	void write(bool repeat);
 	void stopWriteThread();
 	void reset();
-	void writeText(string text);
+	void writeText(string text,ISemanticResultListener * pTextListener);
 	void sync();
 	void destory();
 private:

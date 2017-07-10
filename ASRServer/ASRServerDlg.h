@@ -15,8 +15,10 @@
 #include "afxwin.h"
 #include "AIUIClient.h"
 #include "ASRManager.h"
+#include "ClientASRDataReq.h"
+#include "SemanticResultListener.h"
 // CASRServerDlg 对话框
-class CASRServerDlg : public CDialog
+class CASRServerDlg : public CDialog,ILog,ISemanticResultListener
 {
 // 构造
 public:
@@ -69,8 +71,11 @@ public:
 	void SplitData(int m,char* pmsg,CString ip);
 	//写日志及在界面显示日志
 	void Log(Log::LogLevel level,CString log);
-	FrameASRRsp ProcASRReq(FrameASRReq req);
+	virtual void WriteLog(Log::LogLevel level,string log);
+	void ProcASRReq(ClientASRDataReq clientReq);
 	virtual void OnOK();
+	void onEvent(SemanticResultEvent * pEvent);
+	void SendFrameASRRsp(Client * pClient,FrameASRRsp rsp);
 public:
 	CTreeCtrl mTreeClient;
 	CString listenPort;

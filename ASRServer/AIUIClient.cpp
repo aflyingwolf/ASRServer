@@ -201,6 +201,10 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 						//解析JSON
 						this->mnResult=0;
 						this->resultStr=getSemanticAnswer(resultStr);
+						SementicResultTextEvent textEvent(this->resultStr);
+						textEvent.pListener=this->pTextListener;
+						if(this->pTextListener!=NULL)
+							this->pTextListener->onEvent(&textEvent);
 					}
 				}
 
@@ -375,13 +379,14 @@ void AIUIClient::reset()
 	sprintf(log,"AIUIClient reset end");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }
-void AIUIClient::writeText(string text)
+void AIUIClient::writeText(string text,ISemanticResultListener * pTextListener)
 {
 	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient writeText begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
 	{
+		this->pTextListener=pTextListener;
 		mnResult=-1;
 		text=string_convert::s2utfs(text);
 		// textData内存会在Message在内部处理完后自动release掉

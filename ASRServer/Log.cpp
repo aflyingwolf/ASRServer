@@ -2,17 +2,30 @@
 #include "Log.h"
 #include "Help.h"
 #include <sys/timeb.h>
+
+ILog::ILog()
+{
+}
+ILog::~ILog()
+{
+}
+
 Log::Log(char * logPath,char * logPrevName)
 {
 	strcpy(this->_logPath,logPath);
 	strcpy(this->_logPrevName,logPrevName);
 }
 
-
-Log::~Log(void)
+Log::Log()
 {
 }
-
+Log::~Log()
+{
+}
+void Log::WriteLog(LogLevel level,string log)
+{
+	WriteLog(level,log.c_str());
+}
 void Log::WriteLog(LogLevel level,const char * stringp, ...)
 {
 	va_list ap;
