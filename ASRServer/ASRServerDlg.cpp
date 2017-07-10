@@ -137,7 +137,7 @@ void CASRServerDlg::ProcASRReq(ClientASRDataReq clientReq)
 		else if(clientReq.req.type==2)
 		{
 			char szFile[MAX_PATH];
-			sprintf(szFile,"%s%s",this->pConfig->DataPath.c_str(),clientReq.req.content.c_str());
+			CreateVoxPath(clientReq.req.called.c_str(),clientReq.req.content.c_str(),"", szFile);
 			ASRManager.SemanticVox(szFile);
 		}
 	}
@@ -204,6 +204,79 @@ void CASRServerDlg::onEvent(SemanticResultEvent * pEvent)
 			sprintf(szLog,"CASRServerDlg::ProcASR Clean Error=%d",nASRRet);
 			WriteLog(Log::MESS_INFO,szLog);
 		}
+	}
+}
+/***************************************************************************
+ *  函数名  :  SetUserPath(const char* phone,const char * filename,const char * code, char* dpathname)
+ *  描  述  :  根据目录配置，号码获取最终需要读取的文件名
+	参  数  :  phone:号码,根据号码来生成文件路径前缀
+			   filename:文件名
+			   Code:业务代码，如DHB用来区别不同的业务,可以是以|分割的多个代码。该值可能是空串，兼容旧代码
+			   dpathname:输出文件服务器共享目录的位置
+ *  返  回  :   小于0 :  error
+ *              1 :  success
+ ***************************************************************************/
+int CASRServerDlg::CreateVoxPath(const char* phone,const char * filename,const char * code, char* dpathname)
+{
+	char path1[10],path2[10],path3[10];
+	char tel[32] ={0};
+	char str1[MAX_PATH] = {0};
+	char str2[MAX_PATH] = {0};
+	char str3[MAX_PATH] = {0};
+	char str4[MAX_PATH] = {0};
+	CString log;
+	memset(path1,'\0',10);
+	memset(path2,'\0',10);
+	memset(path3,'\0',10);
+
+	try{
+		sprintf(tel,"%011s",phone);	
+
+		//建立共享盘文件存储路径主目录
+		sprintf(str1,"%s",pConfig->DataPath.c_str());
+		
+		// 主叫号码的1-3位
+		memcpy(path1,tel,3);
+		// 主叫号码的4-6位
+		memcpy(path2,&tel[3],4);
+		// 主叫号码的7-11位
+		memcpy(path3,&tel[7],4);
+
+		//共享盘及本地文件盘符+号码前缀路径建立
+		sprintf(str3,"%s%s",str1,path1);;
+		sprintf(str1,"%s\\%s",str3,path2);
+		sprintf(str3,"%s\\%s",str1,path3);
+		
+		//文件路径建立完毕，str3存储共享盘路径
+
+		//共享盘路径，增加业务代码的文件夹
+		if(strlen(code)>0)//如果业务代码存在
+		{
+			//如果业务代码以|分割，逐次建立业务代码的各个子目录
+			vector<string> codeList;
+			split(codeList,code,"|");
+			for(vector<string>::iterator it=codeList.begin();it<codeList.end();it++)
+			{
+				string strTempCode=*it;
+				sprintf(str1,"%s\\%s",str3,strTempCode.c_str());
+				strcpy(str3,str1);
+			}
+			sprintf(dpathname,"%s\\%s.pcm",str3,filename);
+		}
+		else  //业务代码不存在,判断文件名是否存在，生成共享盘文件名
+		{
+			if((filename!=NULL)&&(strlen(filename)>0))
+				sprintf(dpathname,"%s\\%s.pcm",str3,filename);
+			else
+				sprintf(dpathname,"%s\\%s.pcm",str3,tel);
+		}
+		return 1; 
+	}
+	catch(...){
+		CString log;
+		log.Format("CreateVoxPath Error:phone=%s,filename=%s,code=%s",phone,filename,code);
+		Log(Log::ERROR_INFO,log);
+		return -1;
 	}
 }
 void CASRServerDlg::OnOK() 

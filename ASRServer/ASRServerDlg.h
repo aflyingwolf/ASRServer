@@ -76,6 +76,7 @@ public:
 	virtual void OnOK();
 	void onEvent(SemanticResultEvent * pEvent);
 	void SendFrameASRRsp(Client * pClient,FrameASRRsp rsp);
+	int CreateVoxPath(const char* phone,const char * filename,const char * code, char* dpathname);
 public:
 	CTreeCtrl mTreeClient;
 	CString listenPort;
