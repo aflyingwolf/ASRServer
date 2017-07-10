@@ -17,7 +17,7 @@
 #include "ASRManager.h"
 #include "FrameASRRsp.h"
 #include "MC_Client.h"
-
+#include <direct.h>
 #include <process.h> 
 
 #ifdef _DEBUG
@@ -28,7 +28,7 @@
 // CASRServerDlg 对话框
 CASRServerDlg::CASRServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CASRServerDlg::IDD, pParent)
-	, listenPort(_T("")),m_WriteLog(LOG_PATH,LOG_NAME_PREV)
+	, listenPort(_T(""))
 	, m_Message(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -64,17 +64,17 @@ BOOL CASRServerDlg::OnInitDialog()
 
 	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动
 	//  执行此操作
-	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-
 	//读取配置
 	if(!Config::ReadConfig(CONFIG_FILE,pConfig))
 	{
 		AfxMessageBox("读取配置文件失败，请检查配置文件！");
 		return TRUE;
 	}
+
+	this->m_WriteLog.init(pConfig->LogPath.c_str(),LOG_NAME_PREV);
 	MC_Init(pConfig->AppName,pConfig->HeartTimerInterval);
 	Log(Log::MESS_INFO,"ASRServer 启动");
 	// TODO: 在此添加额外的初始化代码
@@ -95,7 +95,7 @@ BOOL CASRServerDlg::OnInitDialog()
 		OnOK();
 		return FALSE;
 	}
-	if(!ASRManager.ASRInitConnect(*this->pConfig))//建立连接
+	if(!ASRManager.ASRInitConnect(this->pConfig,this))//建立连接
 	{
 		AfxMessageBox("ASR连接失败！");
 		OnOK();
@@ -132,7 +132,14 @@ void CASRServerDlg::ProcASRReq(ClientASRDataReq clientReq)
 		pDlg->Log(Log::MESS_INFO,log);
 		pDlg->req=clientReq;
 		//开始异步语义识别
-		nASRRet=ASRManager.SemanticTxt(clientReq.req.content,rsp.fileName,this);
+		if(clientReq.req.type==1)
+			ASRManager.SemanticTxt(clientReq.req.content);
+		else if(clientReq.req.type==2)
+		{
+			char szFile[MAX_PATH];
+			sprintf(szFile,"%s%s",this->pConfig->DataPath.c_str(),clientReq.req.content.c_str());
+			ASRManager.SemanticVox(szFile);
+		}
 	}
 	catch(...)
 	{
@@ -177,16 +184,21 @@ void CASRServerDlg::onEvent(SemanticResultEvent * pEvent)
 			rsp.fileName=pTextEvent->text.c_str();
 			sprintf(szLog,"CASRServerDlg::ProcASR SemanticTxt OK req=%s",req.content.c_str());
 			WriteLog(Log::MESS_INFO,szLog);
+			SendFrameASRRsp(pEvent->pListener->req.pClient,rsp);
 		}
 		else
 		{
-			rsp.ret=1;
-			rsp.fileName="0";
-			string strRsp=rsp.GetFrameString();
-			sprintf(szLog,"CASRServerDlg::ProcASR SemanticTxt Error");
-			WriteLog(Log::MESS_INFO,szLog);
+			//文字请求是失败，语音识别可能后续还有消息
+			if(req.type==1)  
+			{
+				rsp.ret=1;
+				rsp.fileName="0";
+				string strRsp=rsp.GetFrameString();
+				sprintf(szLog,"CASRServerDlg::ProcASR SemanticTxt Error");
+				WriteLog(Log::MESS_INFO,szLog);
+				SendFrameASRRsp(pEvent->pListener->req.pClient,rsp);
+			}
 		}
-		SendFrameASRRsp(pEvent->pListener->req.pClient,rsp);
 		if((nASRRet=ASRManager.Clean())!=0)//清除缓冲区
 		{
 			sprintf(szLog,"CASRServerDlg::ProcASR Clean Error=%d",nASRRet);

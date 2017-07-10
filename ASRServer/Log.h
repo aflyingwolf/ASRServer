@@ -17,12 +17,13 @@ class Log:public ILog
 {
 public:
 	Log();
-	Log(char * logPath,char * logPrevName);
+	Log(const char * logPath,char * logPrevName);
 	~Log();
-private:
+public:
 	char _logPath[256];
 	char _logPrevName[256];
 public:
+	void init(const char * logPath,char * logPrevName);
 	//–¥»’÷æ
 	void WriteLog(LogLevel level,const char * stringp, ...);
 	virtual void WriteLog(LogLevel level,string log);

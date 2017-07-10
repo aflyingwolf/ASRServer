@@ -9,15 +9,17 @@ public:
 	static bool ReadConfig(const string cfgFileName,Config * & pConfig);
 	static void ClearConfig();
 private:
-	 Config(void);
-	 string _cfgFileName;
-	 static Config * _instance;
+	Config(void);
+	string _cfgFileName;
+	static Config * _instance;
 public:
-	 string ASRServerIp;
-	 int Port;
-	 string AppName;  //应用功能程序名称
-	 string MonUrl;   //监控URL
-	 int HeartTimerInterval;  //心跳时间间隔
-	 string appId;	 //APPID
+	string DataPath;
+	string LogPath;
+	string ASRServerIp;
+	int Port;
+	string AppName;  //应用功能程序名称
+	string MonUrl;   //监控URL
+	int HeartTimerInterval;  //心跳时间间隔
+	string appId;	 //APPID
 };
 

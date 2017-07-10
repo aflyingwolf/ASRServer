@@ -1,2 +1,2 @@
-Debug/
-ASRServer/Debug/
+Debug/*
+ASRServer/Debug/*

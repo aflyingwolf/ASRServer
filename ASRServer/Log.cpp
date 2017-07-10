@@ -10,10 +10,9 @@ ILog::~ILog()
 {
 }
 
-Log::Log(char * logPath,char * logPrevName)
+Log::Log(const char * logPath,char * logPrevName)
 {
-	strcpy(this->_logPath,logPath);
-	strcpy(this->_logPrevName,logPrevName);
+	init(logPath,logPrevName);
 }
 
 Log::Log()
@@ -21,6 +20,11 @@ Log::Log()
 }
 Log::~Log()
 {
+}
+void Log::init(const char * logPath,char * logPrevName)
+{
+	strcpy(this->_logPath,logPath);
+	strcpy(this->_logPrevName,logPrevName);
 }
 void Log::WriteLog(LogLevel level,string log)
 {

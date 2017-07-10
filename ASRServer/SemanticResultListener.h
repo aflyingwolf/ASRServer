@@ -18,6 +18,9 @@ public:
 };
 
 
+/**
+返回语义的文字事件
+**/
 class SementicResultTextEvent : public SemanticResultEvent
 {
 public:

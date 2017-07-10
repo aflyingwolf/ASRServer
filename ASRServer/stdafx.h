@@ -35,15 +35,9 @@
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 
-//本地文件路径
-#define LOCOL_PATH		"F:\\USER"
-//共享盘文件路径,语音文件实际存储位置
-#define DATA_PATH		"G:\\USER"
-
 // 电话最大位长
 #define PHONELEN       32          
 #define CONFIG_FILE ".\\config\\config_asr.ini"
-#define LOG_PATH "D:\\ccs\\log"
 #define LOG_NAME_PREV "ASRServer"
 //SERVER SOCKET 消息句柄
 #define WM_ASRSERVER_SOCKET_MSG WM_USER+200

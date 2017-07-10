@@ -47,9 +47,9 @@ private:
 
 	string mAudioPath;
 
-	bool mRepeat;
-
 	bool mRun;
+
+	Log m_WriteLog;
 
 	FileUtil::DataFileHelper* mFileHelper;
 
@@ -64,7 +64,7 @@ private:
 
 
 public:
-	WriteAudioThread(IAIUIAgent* agent, const string& audioPath, bool repeat);
+	WriteAudioThread(IAIUIAgent* agent, const string& audioPath,Log writeLog);
 
 	~WriteAudioThread();
 
@@ -81,27 +81,28 @@ public:
 	int mnState;   //AIUI状态
 	int mnResult;  //ASR状态成功0/调用中-1/失败1
 	string resultStr;	//ASR返回内容
+	//日志类
+	Log m_WriteLog;
 private:
 	IAIUIAgent* agent;
 	WriteAudioThread * writeThread;
-	//日志类
-	Log m_WriteLog;
 	string getSemanticAnswer(string strSemanticJson);
-	ISemanticResultListener * pTextListener;
+	string getListenTextAnswer(string strListenTextJson);
+	ISemanticResultListener * pListener;
 public:
 	AIUIClient() ;
 
 	~AIUIClient();
 public:
-	void init();
+	void init(ISemanticResultListener * pListener);
 	void createAgent(string appId);
 	void wakeup();
 	void start();
 	void stop();
-	void write(bool repeat);
+	void write(string file);
 	void stopWriteThread();
 	void reset();
-	void writeText(string text,ISemanticResultListener * pTextListener);
+	void writeText(string text);
 	void sync();
 	void destory();
 private:

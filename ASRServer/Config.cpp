@@ -24,7 +24,7 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 {
 	bool ret=false;
 	if(_instance==NULL)
-	{
+	{ 
 		_instance=new Config();
 		_instance->_cfgFileName=cfgFileName;
 		if(_instance->_cfgFileName.empty())
@@ -33,6 +33,23 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 		{
 			char szTemp[512];
 			memset(szTemp,0,sizeof(szTemp));
+
+			GetPrivateProfileString("PATH", //节名
+							"DataPath", 
+							"G:\\USER",    
+							szTemp, 
+							sizeof(szTemp), 
+							_instance->_cfgFileName.c_str()); 
+			_instance->DataPath.assign(szTemp);
+
+			GetPrivateProfileString("PATH", //节名
+							"LogPath", 
+							"D:\\ccs\\log",    
+							szTemp, 
+							sizeof(szTemp), 
+							_instance->_cfgFileName.c_str()); 
+			_instance->LogPath.assign(szTemp);
+
 			GetPrivateProfileString("ASRSER", //节名
 							"ASRServerIp", 
 							"",    

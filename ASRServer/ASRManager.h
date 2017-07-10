@@ -19,10 +19,12 @@ private:
 public:
 	static int ASRBeginInitialize(ILog* plog);
 	static void ASREndUninitialize();
-	bool ASRInitConnect(Config config);
+	bool ASRInitConnect(Config* pConfig,ISemanticResultListener * pTextListener);
 	bool ASRStartConnect();
 	//针对文字进行语义理解
-	int SemanticTxt(string content,string & result,ISemanticResultListener * pListener);
+	int SemanticTxt(string content);
+	//针对语音文件进行语义理解
+	int SemanticVox(string fileName);
 	int ASRFinishDisconnect();
 	int Clean();
 };

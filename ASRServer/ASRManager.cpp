@@ -76,14 +76,15 @@ bool ASRManager::waitSemanticResult(int nMilTimeOut)
  *  函数名  :  int InitConnect()
  *  描  述  :  //初始化连接
  ******************************************************************************/
-bool ASRManager::ASRInitConnect(Config config)
+bool ASRManager::ASRInitConnect(Config * pConfig,ISemanticResultListener * pTextListener)
 {
 	if (ASR_ENABLE==0)
 		return true;
 	else
 	{
-		client.init();
-		client.createAgent(config.appId);
+		client.m_WriteLog.init(pConfig->LogPath.c_str(),LOG_NAME_AIUI_CLIENT);
+		client.init(pTextListener);
+		client.createAgent(pConfig->appId);
 		return true;
 	}
 }
@@ -105,16 +106,31 @@ bool ASRManager::ASRStartConnect()
 }
 
 /******************************************************************************
- *  函数名  :  SemanticTxt(string content,string & result)
+ *  函数名  :  SemanticTxt(string content)
  *  描  述  :  语义识别
  ******************************************************************************/
-int ASRManager::SemanticTxt(string content,string & result,ISemanticResultListener * pListener)
+int ASRManager::SemanticTxt(string content)
 {
 	if (ASR_ENABLE==0)
 		return 0;
 	else
 	{
-		client.writeText(content,pListener);
+		client.writeText(content);
+		return 0;
+	}
+}
+
+/******************************************************************************
+ *  函数名  :  SemanticVox(string fileName)
+ *  描  述  :  语义识别
+ ******************************************************************************/
+int ASRManager::SemanticVox(string fileName)
+{
+	if (ASR_ENABLE==0)
+		return 0;
+	else
+	{
+		client.write(fileName);
 		return 0;
 	}
 }

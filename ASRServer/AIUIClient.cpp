@@ -4,31 +4,30 @@
 #include "string_convert.h"
 bool WriteAudioThread::threadLoop()
 {
-	char audio[1279];
-	int len = mFileHelper->read(audio, 1279);
-
-	if (len > 0)
+	char log[LOG_MAX_LENGTH];
+	try
 	{
-		Buffer* buffer = Buffer::alloc(len);
-		memcpy(buffer->data(), audio, len);
+		char audio[1279];
+		int len = mFileHelper->read(audio, 1279);
 
-		/* param需要UTF-8编码的字符串 */
-		IAIUIMessage * writeMsg = IAIUIMessage::create(AIUIConstant::CMD_WRITE,
-			0, 0, "data_type=audio,sample_rate=16000", buffer);
+		if (len > 0)
+		{
+			Buffer* buffer = Buffer::alloc(len);
+			memcpy(buffer->data(), audio, len);
 
-		if (NULL != mAgent)
-		{
-			mAgent->sendMessage(writeMsg);
-		}		
-		writeMsg->destroy();
-		Sleep(10); // 模拟10ms的说话间隔
-	} else {
-		if (mRepeat)
-		{
-			mFileHelper->rewindReadFile();
+			/* param需要UTF-8编码的字符串 */
+			IAIUIMessage * writeMsg = IAIUIMessage::create(AIUIConstant::CMD_WRITE,
+				0, 0, "data_type=audio,sample_rate=16000", buffer);
+
+			if (NULL != mAgent)
+			{
+				mAgent->sendMessage(writeMsg);
+			}		
+			writeMsg->destroy();
+			Sleep(10); // 模拟10ms的说话间隔
 		} else {
 			IAIUIMessage * stopWrite = IAIUIMessage::create(AIUIConstant::CMD_STOP_WRITE,
-				0, 0, "data_type=audio,sample_rate=16000");
+					0, 0, "data_type=audio,sample_rate=16000");
 
 			if (NULL != mAgent)
 			{
@@ -38,6 +37,19 @@ bool WriteAudioThread::threadLoop()
 
 			mFileHelper->closeReadFile();
 			mRun = false;
+		}
+	}
+	catch(...)
+	{
+		mRun=false;
+		try
+		{
+			sprintf(log,"WriteAudioThread::threadLoop Error");
+			m_WriteLog.WriteLog(Log::ERROR_INFO,log);
+		}
+		catch(...)
+		{
+			;
 		}
 	}
 
@@ -57,8 +69,8 @@ unsigned int __stdcall WriteAudioThread::WriteProc(void * paramptr)
 	return 0;
 }
 
-WriteAudioThread::WriteAudioThread(IAIUIAgent* agent, const string& audioPath, bool repeat):
-mAgent(agent), mAudioPath(audioPath), mRepeat(repeat), mRun(true), mFileHelper(NULL)
+WriteAudioThread::WriteAudioThread(IAIUIAgent* agent, const string& audioPath,Log writeLog):
+mAgent(agent), mAudioPath(audioPath),mRun(true), mFileHelper(NULL),m_WriteLog(writeLog)
 	,thread_hdl_(NULL)
 {
 	mFileHelper = new FileUtil::DataFileHelper("");
@@ -177,14 +189,15 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 				string sub = params["sub"].asString();
 				sprintf(log,"onEvent EVENT_RESULT :%s",sub.c_str());
 				m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
-				if (sub == "nlp")
+
+				if (sub=="iat")
 				{
 					Json::Value empty;
 					Json::Value contentId = content.get("cnt_id", empty);
 
 					if (contentId.empty())
 					{
-						sprintf(log,"onEvent Content Id is empty");
+						sprintf(log,"onEvent iat Content Id is empty");
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 						break;
 					}
@@ -196,15 +209,43 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 					if (NULL != buffer)
 					{
 						resultStr = string((char*)buffer->data());
-						sprintf(log,"onEvent %s:",resultStr.c_str());
+
+						sprintf(log,"onEvent iat %s:",resultStr.c_str());
+						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+						string utf8Str=this->getListenTextAnswer(resultStr);
+						
+						sprintf(log,"onEvent iat utf8: %s:",utf8Str.c_str());
+						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+					}
+				}
+				else if (sub == "nlp")
+				{
+					Json::Value empty;
+					Json::Value contentId = content.get("cnt_id", empty);
+
+					if (contentId.empty())
+					{
+						sprintf(log,"onEvent nlp Content Id is empty");
+						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+						break;
+					}
+
+					string cnt_id = contentId.asString();
+					Buffer* buffer = event.getData()->getBinary(cnt_id.c_str());
+					string resultStr;
+
+					if (NULL != buffer)
+					{
+						resultStr = string((char*)buffer->data());
+						sprintf(log,"onEvent nlp %s:",resultStr.c_str());
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 						//解析JSON
 						this->mnResult=0;
 						this->resultStr=getSemanticAnswer(resultStr);
 						SementicResultTextEvent textEvent(this->resultStr);
-						textEvent.pListener=this->pTextListener;
-						if(this->pTextListener!=NULL)
-							this->pTextListener->onEvent(&textEvent);
+						textEvent.pListener=this->pListener;
+						if(this->pListener!=NULL)
+							this->pListener->onEvent(&textEvent);
 					}
 				}
 
@@ -226,6 +267,35 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 	{
 		m_WriteLog.WriteLog(Log::ERROR_INFO,"AIUIClient::onEvent Error");
 	}
+}
+/**
+根据语义识别文字JSON结果返回对应的回答
+**/
+string AIUIClient::getListenTextAnswer(string strListenTextJson)
+{
+	char log[2048];
+	string answer="";
+	using namespace VA;
+	Json::Value bizJson;
+	Json::Reader reader;
+	
+	if (!reader.parse(strListenTextJson, bizJson, false)) {
+		sprintf(log,"getLinsenTextAnswer parse error:%s",strListenTextJson.c_str());
+		m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+		answer="";
+	}
+	//听写结果
+	Json::Value ws=((bizJson["text"])["ws"]);
+	for(Json::Value::iterator it=ws.begin();it!=ws.end();it++)
+	{
+		Json::Value val=*it;
+		string word=((val["cw"])[0])["w"].asString();
+		string wordUtf8=string_convert::utfs2s(word);
+		sprintf(log,"getLinsenTextAnswer word:%s,utf8:%s",word.c_str(),wordUtf8.c_str());
+		m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+		answer=answer+wordUtf8;
+	}
+	return answer;
 }
 /**
 根据语义识别JSON结果返回对应的回答
@@ -259,7 +329,7 @@ string AIUIClient::getSemanticAnswer(string strSemanticJson)
 	}
 	return answer;
 }
-AIUIClient::AIUIClient() : agent(NULL), writeThread(NULL),m_WriteLog(LOG_PATH,LOG_NAME_AIUI_CLIENT),mnResult(-1)
+AIUIClient::AIUIClient() : agent(NULL), writeThread(NULL),mnResult(-1)
 {
 
 }
@@ -333,7 +403,7 @@ void AIUIClient::stop()
 }
 
 
-void AIUIClient::write(bool repeat)
+void AIUIClient::write(string file)
 {
 	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient write begin");
@@ -341,8 +411,11 @@ void AIUIClient::write(bool repeat)
 	if (agent == NULL)
 		return;
 
+	if (writeThread != NULL) {
+		stopWriteThread(); 
+	}
 	if (writeThread == NULL) {
-		writeThread = new WriteAudioThread(agent, CLIENT_AUDIO_PATH,  repeat);
+		writeThread = new WriteAudioThread(agent, file,this->m_WriteLog);
 		writeThread->run();
 	}	
 	sprintf(log,"AIUIClient write end");
@@ -379,14 +452,13 @@ void AIUIClient::reset()
 	sprintf(log,"AIUIClient reset end");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }
-void AIUIClient::writeText(string text,ISemanticResultListener * pTextListener)
+void AIUIClient::writeText(string text)
 {
 	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient writeText begin");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 	if (NULL != agent)
 	{
-		this->pTextListener=pTextListener;
 		mnResult=-1;
 		text=string_convert::s2utfs(text);
 		// textData内存会在Message在内部处理完后自动release掉
@@ -418,7 +490,7 @@ void AIUIClient::destory()
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }
 
-void AIUIClient::init()
+void AIUIClient::init(ISemanticResultListener * pListener)
 {
 	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient init begin");
@@ -426,6 +498,7 @@ void AIUIClient::init()
 	//		AIUISetting::setSaveDataLog(true);
 	AIUISetting::setAIUIDir(CLIENT_ROOT_DIR);
 	AIUISetting::initLogger(LOG_DIR);
+	this->pListener=pListener;
 	sprintf(log,"AIUIClient init end");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }
