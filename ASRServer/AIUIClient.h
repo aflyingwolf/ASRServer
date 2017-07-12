@@ -33,9 +33,13 @@
 #define LOG_DIR CLIENT_ROOT_DIR##"/log"
 #endif
 
+#pragma comment(lib, "HttpLib.lib")
+
 #define LOG_NAME_AIUI_CLIENT "AIUIClient"
 //等待AIUI响应的时间间隔
 #define AIUI_EVENT_WAIT_TIMEOUT 6000
+//语言文件频率
+#define AIUI_VOX_RATE 16000
 using namespace aiui;
 using namespace std;
 
@@ -84,17 +88,20 @@ public:
 	//日志类
 	Log m_WriteLog;
 private:
+	string dialog_url;	//对话服务的URL
 	IAIUIAgent* agent;
 	WriteAudioThread * writeThread;
+	ISemanticResultListener * pListener;
+private:
 	string getSemanticAnswer(string strSemanticJson);
 	string getListenTextAnswer(string strListenTextJson);
-	ISemanticResultListener * pListener;
+	string getDialogAnswer(string question);
 public:
 	AIUIClient() ;
 
 	~AIUIClient();
 public:
-	void init(ISemanticResultListener * pListener);
+	void init(ISemanticResultListener * pListener,string dialog_url);
 	void createAgent(string appId);
 	void wakeup();
 	void start();

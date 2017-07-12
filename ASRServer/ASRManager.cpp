@@ -83,7 +83,7 @@ bool ASRManager::ASRInitConnect(Config * pConfig,ISemanticResultListener * pText
 	else
 	{
 		client.m_WriteLog.init(pConfig->LogPath.c_str(),LOG_NAME_AIUI_CLIENT);
-		client.init(pTextListener);
+		client.init(pTextListener,pConfig->dialog_url);
 		client.createAgent(pConfig->appId);
 		return true;
 	}

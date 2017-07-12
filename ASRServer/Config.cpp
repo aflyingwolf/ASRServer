@@ -93,6 +93,14 @@ bool Config::ReadConfig(string cfgFileName,Config * & pConfig)
 							_instance->_cfgFileName.c_str());
 			_instance->appId.assign(szTemp);
 
+			GetPrivateProfileString("DIALOG", //节名
+							"URL", 
+							_T(""),    
+							szTemp, 
+							sizeof(szTemp), 
+							_instance->_cfgFileName.c_str());
+			_instance->dialog_url.assign(szTemp);
+
 			ret=true;
 		}		
 	}

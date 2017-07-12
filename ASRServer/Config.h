@@ -21,5 +21,6 @@ public:
 	string MonUrl;   //监控URL
 	int HeartTimerInterval;  //心跳时间间隔
 	string appId;	 //APPID
+	string dialog_url;	//对话服务的URL
 };
 

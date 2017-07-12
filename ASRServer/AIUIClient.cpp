@@ -2,6 +2,7 @@
 #include "AIUIClient.h"
 #include "json/json.h"
 #include "string_convert.h"
+#include "HttpReq.h"
 bool WriteAudioThread::threadLoop()
 {
 	char log[LOG_MAX_LENGTH];
@@ -9,15 +10,18 @@ bool WriteAudioThread::threadLoop()
 	{
 		char audio[1279];
 		int len = mFileHelper->read(audio, 1279);
-
+		char szRate[512];
+		memset(szRate,0,sizeof(szRate));
+		sprintf(szRate,"data_type=audio,sample_rate=%d",AIUI_VOX_RATE);
 		if (len > 0)
 		{
 			Buffer* buffer = Buffer::alloc(len);
 			memcpy(buffer->data(), audio, len);
 
 			/* param需要UTF-8编码的字符串 */
+			
 			IAIUIMessage * writeMsg = IAIUIMessage::create(AIUIConstant::CMD_WRITE,
-				0, 0, "data_type=audio,sample_rate=16000", buffer);
+				0, 0, szRate, buffer);
 
 			if (NULL != mAgent)
 			{
@@ -27,7 +31,7 @@ bool WriteAudioThread::threadLoop()
 			Sleep(10); // 模拟10ms的说话间隔
 		} else {
 			IAIUIMessage * stopWrite = IAIUIMessage::create(AIUIConstant::CMD_STOP_WRITE,
-					0, 0, "data_type=audio,sample_rate=16000");
+					0, 0, szRate);
 
 			if (NULL != mAgent)
 			{
@@ -213,9 +217,9 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 						sprintf(log,"onEvent iat %s:",resultStr.c_str());
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 						string utf8Str=this->getListenTextAnswer(resultStr);
-						
 						sprintf(log,"onEvent iat utf8: %s:",utf8Str.c_str());
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+						this->getDialogAnswer(utf8Str);
 					}
 				}
 				else if (sub == "nlp")
@@ -253,7 +257,7 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 
 		case AIUIConstant::EVENT_ERROR:
 			{
-				sprintf(log,"onEvent EVENT_ERROR %s:",event.getArg1());
+				sprintf(log,"onEvent EVENT_ERROR %d:",event.getArg1());
 				m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 			} break;
 		case AIUIConstant::EVENT_CMD_RETURN:
@@ -269,11 +273,42 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 	}
 }
 /**
+请求对话服务获得对话的结果
+**/
+string AIUIClient::getDialogAnswer(string question)
+{
+	string answer="";
+	char log[LOG_MAX_LENGTH],Url[1024],Data[1024];
+	try
+	{
+		sprintf(log,"AIUIClient::getDialogAnswer url=%s; question=%s",this->dialog_url.c_str(),question.c_str());
+		m_WriteLog.WriteLog(Log::MESS_INFO,log);
+		memset(Url,0,sizeof(Url));
+		sprintf(Url,"%s",this->dialog_url.c_str());
+		memset(Data,0,sizeof(Data));
+		sprintf(Data,"companyId=1&path=1,&question=%s",question.c_str());
+		sprintf(log,"AIUIClient::getDialogAnswer HttpRequest URL=%s;Data=%s",Url,Data);
+		m_WriteLog.WriteLog(Log::MESS_INFO,log);
+		string utf8Data=string_convert::s2utfs(Data);
+		const char * pUtf8Data=utf8Data.c_str();
+		int nLen=strlen(pUtf8Data);
+		HttpReq::WinHttp::GetInstance()->HttpRequest(Url,pUtf8Data,nLen);
+		sprintf(log,"AIUIClient::getDialogAnswer url=%s,question=%s",this->dialog_url.c_str(),question.c_str());
+		m_WriteLog.WriteLog(Log::MESS_INFO,log);
+
+	}
+	catch(...)
+	{
+		m_WriteLog.WriteLog(Log::ERROR_INFO,"AIUIClient::getDialogAnswer Error");
+	}
+	return answer;
+}
+/**
 根据语义识别文字JSON结果返回对应的回答
 **/
 string AIUIClient::getListenTextAnswer(string strListenTextJson)
 {
-	char log[2048];
+	char log[LOG_MAX_LENGTH];
 	string answer="";
 	using namespace VA;
 	Json::Value bizJson;
@@ -490,7 +525,7 @@ void AIUIClient::destory()
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }
 
-void AIUIClient::init(ISemanticResultListener * pListener)
+void AIUIClient::init(ISemanticResultListener * pListener,string dialog_url)
 {
 	char log[LOG_MAX_LENGTH];
 	sprintf(log,"AIUIClient init begin");
@@ -499,6 +534,7 @@ void AIUIClient::init(ISemanticResultListener * pListener)
 	AIUISetting::setAIUIDir(CLIENT_ROOT_DIR);
 	AIUISetting::initLogger(LOG_DIR);
 	this->pListener=pListener;
+	this->dialog_url=dialog_url;
 	sprintf(log,"AIUIClient init end");
 	m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
 }

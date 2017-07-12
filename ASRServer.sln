@@ -2,6 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ASRServer", "ASRServer\ASRServer.vcproj", "{3A8343A4-4DDA-4BD0-B58E-ADA913146B35}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9633FEB7-446C-4B33-A3B3-B0023297F4F9} = {9633FEB7-446C-4B33-A3B3-B0023297F4F9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpLib", "HttpLib\HttpLib.vcproj", "{9633FEB7-446C-4B33-A3B3-B0023297F4F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +18,10 @@ Global
 		{3A8343A4-4DDA-4BD0-B58E-ADA913146B35}.Debug|Win32.Build.0 = Debug|Win32
 		{3A8343A4-4DDA-4BD0-B58E-ADA913146B35}.Release|Win32.ActiveCfg = Release|Win32
 		{3A8343A4-4DDA-4BD0-B58E-ADA913146B35}.Release|Win32.Build.0 = Release|Win32
+		{9633FEB7-446C-4B33-A3B3-B0023297F4F9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9633FEB7-446C-4B33-A3B3-B0023297F4F9}.Debug|Win32.Build.0 = Debug|Win32
+		{9633FEB7-446C-4B33-A3B3-B0023297F4F9}.Release|Win32.ActiveCfg = Release|Win32
+		{9633FEB7-446C-4B33-A3B3-B0023297F4F9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

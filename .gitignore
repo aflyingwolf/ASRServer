@@ -1,2 +1,4 @@
 Debug/*
 ASRServer/Debug/*
+ASRServer/log/*
+HttpLib/Debug/*

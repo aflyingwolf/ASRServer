@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include;..\include\MC;..\include\comLib;..\include\IFLY;.\jsoncpp;jsoncpp\json"
+				AdditionalIncludeDirectories="..\include;..\include\MC;..\include\comLib;..\include\IFLY;.\jsoncpp;jsoncpp\json;..\HttpLib"
 				PreprocessorDefinitions="WIN32;_MBCS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;$(NOINHERIT)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -71,7 +71,8 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="aiui.lib msc.lib MC_Client.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib"
 				LinkIncremental="0"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="..\lib;..\Debug"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				SubSystem="2"
@@ -511,6 +512,10 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="http"
+			>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
