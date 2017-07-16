@@ -17,11 +17,26 @@
 #include <string>
 using namespace std;
 
-#define BUF_SIZE    (1024)
+#define HTTPREQ_STATUS_BUF_SIZE    (128)
+
+#define HTTPREQ_BODY_BUF_SIZE    (40960)
 
 namespace HttpReq
 {
 
+	class string_convert
+	{
+	public:
+		string_convert(void);
+		~string_convert(void);
+	public:
+		static string ws2s(const wstring& ws);
+		static wstring s2ws(const string& s);
+		static wstring UTF2Uni(const char* src, std::wstring &t);
+		static int Uni2UTF( const wstring& strRes, char *utf8, int nMaxSize );
+		static string s2utfs(const  string&  strSrc);
+		static string  utfs2s(const string& strutf);
+	};
 	class CrackedUrl {
 		int m_scheme;
 		CStringW m_host;
@@ -117,6 +132,23 @@ namespace HttpReq
 			return buf;
 		}
 	};
+	
+	/**
+	响应包
+	**/
+	class HttpRsp
+	{
+	public:
+		string statusCode;  //响应码
+		string statusText;  //状态内容
+		string strBody;  //相应内容
+	public:
+		HttpRsp(){};
+		HttpRsp(string statusCode,string statusText,string strBody):statusCode(statusCode),statusText(statusText),strBody(strBody){};
+		~HttpRsp(){};
+	public:
+		static HttpRsp createErrRsp(string msg){return HttpRsp("-1","-1",msg);};
+	};
 	class WinHttp
 	{
 	public:
@@ -130,11 +162,12 @@ namespace HttpReq
 		BOOL QueryInfo(HINTERNET hRequest, int queryId, char* szBuf, DWORD* pdwSize);
 		BOOL ReadData(HINTERNET hRequest, void* buffer, DWORD length, DWORD* cbRead);
 		void CloseInternetHandle(HINTERNET hInternet);
-		BOOL HttpRequest(CStringW strRequestUrl,CStringW strPostData);
-		BOOL HttpRequest(char * szRequestUrl,const char* szPostData,int dataLen);
+		HttpRsp HttpRequest(char * szRequestUrl,const char* szPostData,int dataLen);
 	private:
 		WinHttp();
 		~WinHttp();
 		static WinHttp*		m_pInstance;
+	private:
+		char * TrimHttpBody(char * pBody,int nLen);
 	};
 }

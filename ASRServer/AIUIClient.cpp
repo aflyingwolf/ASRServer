@@ -283,18 +283,27 @@ string AIUIClient::getDialogAnswer(string question)
 	{
 		sprintf(log,"AIUIClient::getDialogAnswer url=%s; question=%s",this->dialog_url.c_str(),question.c_str());
 		m_WriteLog.WriteLog(Log::MESS_INFO,log);
-		memset(Url,0,sizeof(Url));
-		sprintf(Url,"%s",this->dialog_url.c_str());
-		memset(Data,0,sizeof(Data));
-		sprintf(Data,"companyId=1&path=1,&question=%s",question.c_str());
-		sprintf(log,"AIUIClient::getDialogAnswer HttpRequest URL=%s;Data=%s",Url,Data);
-		m_WriteLog.WriteLog(Log::MESS_INFO,log);
-		string utf8Data=string_convert::s2utfs(Data);
-		const char * pUtf8Data=utf8Data.c_str();
-		int nLen=strlen(pUtf8Data);
-		HttpReq::WinHttp::GetInstance()->HttpRequest(Url,pUtf8Data,nLen);
-		sprintf(log,"AIUIClient::getDialogAnswer url=%s,question=%s",this->dialog_url.c_str(),question.c_str());
-		m_WriteLog.WriteLog(Log::MESS_INFO,log);
+		if(question.length()>0){
+			memset(Url,0,sizeof(Url));
+			sprintf(Url,"%s",this->dialog_url.c_str());
+			memset(Data,0,sizeof(Data));
+			sprintf(Data,"companyId=1&path=1,&question=%s",question.c_str());
+			sprintf(log,"AIUIClient::getDialogAnswer HttpRequest URL=%s;Data=%s",Url,Data);
+			m_WriteLog.WriteLog(Log::MESS_INFO,log);
+			string utf8Data=string_convert::s2utfs(Data);
+			const char * pUtf8Data=utf8Data.c_str();
+			int nLen=strlen(pUtf8Data);
+			HttpReq::HttpRsp httpRsp=HttpReq::WinHttp::GetInstance()->HttpRequest(Url,pUtf8Data,nLen);
+			sprintf(log,"AIUIClient::getDialogAnswer HttpRequest httpRsp.statusCode=%s,httpRsp.statusText=%s,httpRsp.strBody=%s",
+				httpRsp.statusCode.c_str(),httpRsp.statusText.c_str(),httpRsp.strBody.c_str());
+			m_WriteLog.WriteLog(Log::MESS_INFO,log);
+			
+			sprintf(log,"AIUIClient::getDialogAnswer HttpRequest decode httpRsp.statusCode=%s,httpRsp.statusText=%s,httpRsp.strBody=%s",
+				string_convert::utfs2s(httpRsp.statusCode).c_str(),
+				string_convert::utfs2s(httpRsp.statusText).c_str(),
+				string_convert::utfs2s(httpRsp.strBody).c_str());
+			m_WriteLog.WriteLog(Log::MESS_INFO,log);
+		}
 
 	}
 	catch(...)

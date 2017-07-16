@@ -10,6 +10,7 @@ string_convert::~string_convert(void)
 {
 }
 
+
 string string_convert::ws2s(const wstring& ws)
 {
     string curLocale = setlocale(LC_ALL, NULL); // curLocale = "C";
