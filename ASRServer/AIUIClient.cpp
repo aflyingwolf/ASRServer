@@ -213,13 +213,33 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 					if (NULL != buffer)
 					{
 						resultStr = string((char*)buffer->data());
-
 						sprintf(log,"onEvent iat %s:",resultStr.c_str());
+
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
-						string utf8Str=this->getListenTextAnswer(resultStr);
-						sprintf(log,"onEvent iat utf8: %s:",utf8Str.c_str());
+						list<string> answerList=this->getListenTextAnswer(resultStr);
+						sprintf(log,"onEvent iat length: %d:",answerList.size());
 						m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
-						this->getDialogAnswer(utf8Str);
+						for(list<string>::iterator it=answerList.begin();it!=answerList.end();it++)
+						{
+							try
+							{
+								string utf8Str=*it;
+								if(utf8Str.length()>0){
+									DialogAnswer dialogAnswer=this->getDialogAnswer(utf8Str);
+									if(dialogAnswer.ret==0){
+										SementicResultTextEvent textEvent(dialogAnswer.answer);
+										textEvent.pListener=this->pListener;
+										if(this->pListener!=NULL)
+											this->pListener->onEvent(&textEvent);
+									}
+									::Sleep(300);
+								}
+							}
+							catch(...)
+							{
+								m_WriteLog.WriteLog(Log::ERROR_INFO,"AIUIClient::onEvent Error getDialogAnswer");
+							}
+						}
 					}
 				}
 				else if (sub == "nlp")
@@ -248,8 +268,10 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 						this->resultStr=getSemanticAnswer(resultStr);
 						SementicResultTextEvent textEvent(this->resultStr);
 						textEvent.pListener=this->pListener;
+						/*
 						if(this->pListener!=NULL)
 							this->pListener->onEvent(&textEvent);
+						*/
 					}
 				}
 
@@ -275,9 +297,10 @@ void AIUIClient::onEvent(IAIUIEvent& event)
 /**
 请求对话服务获得对话的结果
 **/
-string AIUIClient::getDialogAnswer(string question)
+DialogAnswer AIUIClient::getDialogAnswer(string question)
 {
-	string answer="";
+	DialogAnswer dialogAnswer;
+	dialogAnswer.ret=1;
 	char log[LOG_MAX_LENGTH],Url[1024],Data[1024];
 	try
 	{
@@ -297,12 +320,24 @@ string AIUIClient::getDialogAnswer(string question)
 			sprintf(log,"AIUIClient::getDialogAnswer HttpRequest httpRsp.statusCode=%s,httpRsp.statusText=%s,httpRsp.strBody=%s",
 				httpRsp.statusCode.c_str(),httpRsp.statusText.c_str(),httpRsp.strBody.c_str());
 			m_WriteLog.WriteLog(Log::MESS_INFO,log);
-			
-			sprintf(log,"AIUIClient::getDialogAnswer HttpRequest decode httpRsp.statusCode=%s,httpRsp.statusText=%s,httpRsp.strBody=%s",
-				string_convert::utfs2s(httpRsp.statusCode).c_str(),
-				string_convert::utfs2s(httpRsp.statusText).c_str(),
-				string_convert::utfs2s(httpRsp.strBody).c_str());
-			m_WriteLog.WriteLog(Log::MESS_INFO,log);
+			if(httpRsp.statusCode.compare("200")==0)
+			{
+				using namespace VA;
+				Json::Value bizJson;
+				Json::Reader reader;
+	
+				if (!reader.parse(httpRsp.strBody, bizJson, false)) {
+					sprintf(log,"getDialogAnswer parse error:%s",httpRsp.strBody.c_str());
+					m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+					return dialogAnswer;
+				}
+				Json::Value ret=bizJson["result"];
+				dialogAnswer.ret=ret.asInt();
+				if(dialogAnswer.ret==0){
+					dialogAnswer.parentId=bizJson["parentId"].asInt();
+					dialogAnswer.answer=bizJson["answer"].asString();
+				}
+			}
 		}
 
 	}
@@ -310,13 +345,15 @@ string AIUIClient::getDialogAnswer(string question)
 	{
 		m_WriteLog.WriteLog(Log::ERROR_INFO,"AIUIClient::getDialogAnswer Error");
 	}
-	return answer;
+	return dialogAnswer;
 }
+
 /**
 根据语义识别文字JSON结果返回对应的回答
 **/
-string AIUIClient::getListenTextAnswer(string strListenTextJson)
+list<string> AIUIClient::getListenTextAnswer(string strListenTextJson)
 {
+	list<string> answerList;
 	char log[LOG_MAX_LENGTH];
 	string answer="";
 	using namespace VA;
@@ -326,7 +363,6 @@ string AIUIClient::getListenTextAnswer(string strListenTextJson)
 	if (!reader.parse(strListenTextJson, bizJson, false)) {
 		sprintf(log,"getLinsenTextAnswer parse error:%s",strListenTextJson.c_str());
 		m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
-		answer="";
 	}
 	//听写结果
 	Json::Value ws=((bizJson["text"])["ws"]);
@@ -337,9 +373,11 @@ string AIUIClient::getListenTextAnswer(string strListenTextJson)
 		string wordUtf8=string_convert::utfs2s(word);
 		sprintf(log,"getLinsenTextAnswer word:%s,utf8:%s",word.c_str(),wordUtf8.c_str());
 		m_WriteLog.WriteLog(Log::DEBUG_INFO,log);
+		answerList.push_back(wordUtf8);
 		answer=answer+wordUtf8;
 	}
-	return answer;
+	answerList.push_back(answer);
+	return answerList;
 }
 /**
 根据语义识别JSON结果返回对应的回答

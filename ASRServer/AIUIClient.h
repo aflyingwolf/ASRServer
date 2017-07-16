@@ -17,7 +17,8 @@
 #include "FileUtil.h"
 #include "Log.h"
 #include "SemanticResultListener.h"
-
+#include "DialogAnswer.h"
+#include <list>
 #ifdef _MSC_VER
 #include <windows.h>
 #include <process.h>
@@ -94,8 +95,8 @@ private:
 	ISemanticResultListener * pListener;
 private:
 	string getSemanticAnswer(string strSemanticJson);
-	string getListenTextAnswer(string strListenTextJson);
-	string getDialogAnswer(string question);
+	list<string> getListenTextAnswer(string strListenTextJson);
+	DialogAnswer getDialogAnswer(string question);
 public:
 	AIUIClient() ;
 

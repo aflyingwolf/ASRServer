@@ -379,12 +379,14 @@ namespace HttpReq
 		int statusTextId = HTTP_QUERY_STATUS_TEXT;
 	#endif
 		dwSize = HTTPREQ_STATUS_BUF_SIZE;
+		memset(szStatusBuf,0,sizeof(szStatusBuf));
 		if (WinHttp::GetInstance()->QueryInfo(hRequest, contextLengthId, szStatusBuf, &dwSize)) {
 			szStatusBuf[dwSize] = 0;
 			//printf("Content length:[%s]\n", szBuf);
 		}
 
 		dwSize = HTTPREQ_STATUS_BUF_SIZE;
+		memset(szStatusBuf,0,sizeof(szStatusBuf));
 		if (WinHttp::GetInstance()->QueryInfo(hRequest, statusCodeId, szStatusBuf, &dwSize)) {
 			szStatusBuf[dwSize] = 0;
 			//printf("Status code:[%s]\n", szBuf);
@@ -393,6 +395,7 @@ namespace HttpReq
 		}
 
 		dwSize = HTTPREQ_STATUS_BUF_SIZE;
+		memset(szStatusBuf,0,sizeof(szStatusBuf));
 		if (WinHttp::GetInstance()->QueryInfo(hRequest, statusTextId, szStatusBuf, &dwSize)) {
 			szStatusBuf[dwSize] = 0;
 			//printf("Status text:[%s]\n", szBuf);
@@ -400,12 +403,13 @@ namespace HttpReq
 			httpRsp.statusText=string_convert::ws2s(wsTemp);
 		}
 
+		char szBody[HTTPREQ_BODY_BUF_SIZE*10];
 		char szBodyBuf[HTTPREQ_BODY_BUF_SIZE];
 		dwSize=HTTPREQ_BODY_BUF_SIZE;
-		szBodyBuf[0] = 0;
-
+		memset(szBody,0,sizeof(szBody));
 		// read data.
 		for (;;) {
+			memset(szBodyBuf,0,sizeof(szBodyBuf));
 			dwSize = HTTPREQ_BODY_BUF_SIZE;
 			if (WinHttp::GetInstance()->ReadData(hRequest, szBodyBuf, dwSize, &dwSize) == FALSE) {
 				break;
@@ -416,11 +420,10 @@ namespace HttpReq
 			}
 
 			szBodyBuf[dwSize] = 0;
+			strcat(szBody,szBodyBuf);
 			//printf("%s\n", szBuf);    //Output value = value1 + value2
-			TrimHttpBody(szBodyBuf,dwSize);
-			wsTemp=(wchar_t *)szBodyBuf;
-			httpRsp.strBody.append(string_convert::ws2s(wsTemp));
 		}
+		httpRsp.strBody=string_convert::utfs2s(szBody);
 
 		WinHttp::GetInstance()->CloseInternetHandle(hRequest);
 		WinHttp::GetInstance()->CloseInternetHandle(hConnect);
@@ -431,12 +434,14 @@ namespace HttpReq
 	char * WinHttp::TrimHttpBody(char * pBody,int nLen)
 	{
 		char *p=pBody;
-		for(int i=0;i<nLen-1;i++)
+		for(int i=0;i<nLen-3;i++)
 		{
-			if ((*p=='\r')&&(*(p+1)=='\n'))
+			if ((*p=='\r')&&(*(p+1)=='\n')&&(*(p+2)=='\r')&&(*(p+3)=='\n'))
 			{
 				*p=0;
 				*(p+1)=0;
+				*(p+2)=0;
+				*(p+3)=0;
 				break;
 			}
 			p++;

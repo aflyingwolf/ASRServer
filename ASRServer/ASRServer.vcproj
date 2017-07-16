@@ -233,6 +233,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DialogAnswer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FileUtil.cpp"
 				>
 			</File>
@@ -344,6 +348,10 @@
 			</File>
 			<File
 				RelativePath=".\Config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DialogAnswer.h"
 				>
 			</File>
 			<File
