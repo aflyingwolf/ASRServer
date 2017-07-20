@@ -30,17 +30,24 @@ bool WriteAudioThread::threadLoop()
 			writeMsg->destroy();
 			Sleep(10); // 模拟10ms的说话间隔
 		} else {
-			IAIUIMessage * stopWrite = IAIUIMessage::create(AIUIConstant::CMD_STOP_WRITE,
-					0, 0, szRate);
-
-			if (NULL != mAgent)
+			mNoDataTimes++;
+			if(mNoDataTimes>AIUI_VOX_WAiTTIMES)
 			{
-				mAgent->sendMessage(stopWrite);
-			}
-			stopWrite->destroy();
+				IAIUIMessage * stopWrite = IAIUIMessage::create(AIUIConstant::CMD_STOP_WRITE,
+						0, 0, szRate);
 
-			mFileHelper->closeReadFile();
-			mRun = false;
+				if (NULL != mAgent)
+				{
+					mAgent->sendMessage(stopWrite);
+				}
+				stopWrite->destroy();
+
+				mFileHelper->closeReadFile();
+				mRun = false;
+			}
+			else{
+				Sleep(AIUI_VOX_WAITSLEEP);
+			}
 		}
 	}
 	catch(...)
@@ -64,7 +71,8 @@ bool WriteAudioThread::threadLoop()
 unsigned int __stdcall WriteAudioThread::WriteProc(void * paramptr)
 {
 	WriteAudioThread * self = (WriteAudioThread *)paramptr;
-
+	//等待200毫秒开始读，防止文件还没有开始写数据
+	Sleep(AIUI_VOX_WAITSLEEP*2);
 	while (1) {
 		if (! self->threadLoop())
 			break;
@@ -74,7 +82,7 @@ unsigned int __stdcall WriteAudioThread::WriteProc(void * paramptr)
 }
 
 WriteAudioThread::WriteAudioThread(IAIUIAgent* agent, const string& audioPath,Log writeLog):
-mAgent(agent), mAudioPath(audioPath),mRun(true), mFileHelper(NULL),m_WriteLog(writeLog)
+mAgent(agent), mAudioPath(audioPath),mRun(true), mFileHelper(NULL),m_WriteLog(writeLog),mNoDataTimes(0)
 	,thread_hdl_(NULL)
 {
 	mFileHelper = new FileUtil::DataFileHelper("");

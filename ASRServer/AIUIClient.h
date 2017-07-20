@@ -41,6 +41,8 @@
 #define AIUI_EVENT_WAIT_TIMEOUT 6000
 //语言文件频率
 #define AIUI_VOX_RATE 16000
+#define AIUI_VOX_WAiTTIMES 3
+#define AIUI_VOX_WAITSLEEP 100
 using namespace aiui;
 using namespace std;
 
@@ -53,6 +55,9 @@ private:
 	string mAudioPath;
 
 	bool mRun;
+	
+	//考虑到录音是断续的，如果没有录音会等待，等待超过指定次数表示无录音了
+	int mNoDataTimes;
 
 	Log m_WriteLog;
 
